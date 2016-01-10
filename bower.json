@@ -1,0 +1,28 @@
+{
+  "name": "MikesHome",
+  "authors": [
+    "Michael Webster <mikewobbler@gmail.com>"
+  ],
+  "description": "\"Home page for Grendel's web server.\"",
+  "main": "main.js",
+  "moduleType": [],
+  "keywords": [
+    "home",
+    "website"
+  ],
+  "license": "MIT",
+  "homepage": "127.0.0.1",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.6",
+    "requirejs": "~2.1.22",
+    "d3": "~3.5.12"
+  }
+}

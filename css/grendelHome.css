@@ -1,0 +1,41 @@
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.with-margin {
+    margin: 5px 1px;
+}
+.with-border {
+    border: 1px groove black;
+}
+
+.full-height {
+    height: 650px;
+}
+
+.fill-height {
+    height: 80%;
+}
+
+.table-responsive td,
+.table-responsive th
+{
+     padding: 10px 10px;
+     border: 1px solid black;
+}

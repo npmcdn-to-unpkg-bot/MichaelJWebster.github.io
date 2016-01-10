@@ -1,1 +1,97 @@
-Hello World Again
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head
+	 content must come *after* these tags -->
+    <meta name="description" content="Michael's Homepage">
+    <meta name="author" content="Michael Webster.">
+    <link rel="icon" href="../img/black-white-metro-globe-icon.png">
+
+    <title>Michael's Homepage</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.css"
+	  rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/grendelHome.css" rel="stylesheet">
+  </head>
+
+  <body class="full-height">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed"
+		  data-toggle="collapse" data-target="#navbar"
+		  aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">HomePage</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="../index.html">Home</a></li>
+            <li><a href="../html/about.html">About</a></li>
+            <li><a href="../html/contact.html">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+    <div class="jumbotron">
+      <div class="container">
+	<h1>Michael Webster's Homepage</h1>
+	<p class="lead">Michael's Homepage, using the jumbotron template.</p>
+	<p>
+	  <a class="btn btn-primary btn-lg" href="#" role="button">
+	    Learn more &raquo;
+	  </a>
+	</p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+	<div class="col-md-4">
+	  <h2>Some d3.js exploration.</h2>
+	  <p>A page containing some d3 experiments, including charts.</p>
+	  <p>
+	    <a class="btn btn-default" href="../html/d3jsPage.html"
+	       role="button" id="goto_d3">
+	      View details &raquo;
+	    </a>
+	  </p>
+	</div> <!-- col-md-4 -->
+	<div class="col-md-4">
+	  <h2>Some Machine Learning exploration.</h2>
+	  <p>A page containing some machine learning implementations.</p>
+	  <p>
+	    <a class="btn btn-default" href="#" role="button">
+	      View details &raquo;
+	    </a>
+	  </p>
+	</div> <!-- col-md-4 -->
+	<div class="col-md-4">
+	  <h2>Some data science explorations:</h2>
+	  <p>A page containing some data science experiments.</p>
+	  <p>
+	    <a class="btn btn-default" href="#" role="button">
+	      View details &raquo;
+	    </a>
+	  </p>
+	</div> <!-- col-md-4 -->
+      </div> <!-- row -->
+    </div> <!-- Container -->
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- Add requirejs -->
+    <script data-main="../js/mainPage.js"
+	    src="../bower_components/requirejs/require.js">
+    </script>
+  </body>
+</html>

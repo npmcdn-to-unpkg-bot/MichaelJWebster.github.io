@@ -1,0 +1,504 @@
+define(["jquery", "d3", "underscore"], function($, d3, _) {
+    console.log("D3 version is: " + d3.version);
+    sp = { greeting : "ScatterPlot v1.0"};
+
+    /**
+     * Populate the table tableId with the data supplied in csvFile.
+     *
+     * @param csvFile    The name of the csv file containing the data.
+     * @param tableId    The id of the <table> element to populate.
+     */
+    sp.createTableFromCsv = function(csvFile, tableId)
+    {
+	sp.origData = {};
+
+	/**
+	 * Use the data in origData sorted by the key "sortBy" to create the table.
+	 *
+	 * @param error     If this function is performing as a callback for
+	 *                  d3.csv, then error is the error returned if any.
+	 * @param origData  The data as initially read from the csv file.
+	 * @param sortBy    The name of a field to sort the data by.
+	 */
+	function handleData(error, origData, sortBy) {
+	    sp.sortBy = typeof sortBy === 'undefined' ? "Gini Coefficient" : sortBy;
+
+	    // Retain the data
+	    sp.origData = origData;
+
+	    // Empty the table
+	    $("#" + tableId).empty();
+	    // Use underscore functions to transpose data in d - ie. turn columns
+	    // into rows.
+	    sp.origData = origData;
+	    //sp.sorted = _.sortBy(sp.origData, sortBy);
+	    sp.sorted = _.sortBy(sp.origData, function(el) {
+		if (isNaN(el[sp.sortBy]))
+		{
+		    return el[sp.sortBy];
+		}
+		else
+		{
+		    return Number(el[sp.sortBy]);
+		}
+	    });
+	    sp.tableObject = transpose(sp.sorted);
+	    
+	    $("#" + tableId).append("<table><thead><tr></tr></thead></table>");
+	    var th = d3.select("#" + tableId + " tr")
+		    .selectAll("th")
+		    .data(d3.keys(sp.tableObject))
+		    .enter()
+		    .append("th")
+		    .append("a")
+		    .attr("href", "#")
+		    .text(function(d) { return d;});
+
+	    $("#" + tableId + " th a").on("click", resort);
+
+	    $("#" + tableId + " table").append("<tbody></tbody>");
+	    var tr = d3.select("#" + tableId + " tbody")
+		    .selectAll("tr")
+		    .data(sp.sorted)
+		    .enter()
+		    .append("tr");
+
+	    var td = tr.selectAll("td")
+		    .data(function(d) {
+			return _.values(d);
+		    })
+		    .enter()
+		    .append("td")
+		    .text(function(d) { return d;});
+	}
+
+	/**
+	 * Event handler that recreates the table sorted by the value of the
+	 * element clicked on that invoked the event handler.
+	 *
+	 * @param event   The dom event.
+	 */
+	var resort = function(event) {
+	    event.preventDefault();
+	    var fieldName = event.target.textContent;
+	    handleData(null, sp.origData, fieldName);
+	};
+
+	/**
+	 * Return the transpose of d.
+	 *
+	 * @param d   An array of objects.
+	 *
+	 * @return An object with the fields from the objects in d mapped to
+	 *         arrays of their values.
+	 */
+	function transpose(d)
+	{
+	    var table = {};
+	    _.each(d[0], function(el, k) {
+		table[k] = [];
+	    });
+	    _.each(d, function(data) {
+		_.each(data, function(el, k) {
+		    table[k].push(el);
+		});
+	    });
+	    return table;
+	}
+
+	d3.csv(csvFile, handleData);
+    };
+
+    /**
+     * Create an interactive scatter plot with the supplied data.
+     *
+     * @param csvFile    The name of the csv file containing the data.
+     * @param tableId    The id of the <table> element to populate.
+     */
+    sp.createInteractiveScatterPlot = function(csvFile, menuId, chartId, xName, yName, labelField)
+    {
+	isp = {};
+	isp.origData = {};
+	isp.csvFile = csvFile;
+	isp.menuId = menuId;
+	isp.chartId = chartId;
+
+	// Data field to be used for the X axis of the scatter plot.
+	isp.currentX = xName;
+
+	// Data field y value to be used for the Y-axis of the scatter plot.
+	isp.currentY = yName;
+
+	// Field with which we label the points in the scatter plot.
+	isp.currentL = labelField;
+
+	/**
+	 * Use the data in origData sorted by the key "sortBy" to create the table.
+	 *
+	 * @param origData  The data as initially read from the csv file.
+	 * @param sortBy    The name of a field to sort the data by.
+	 */
+	isp.createChart = function(origData, xName, yName, lName) {
+	    isp.currentX = typeof xName === 'undefined' ? isp.currentX : xName;
+	    isp.currentY = typeof yName === 'undefined' ? isp.currentY : yName;
+	    isp.currentL = typeof lName === 'undefined' ? isp.currentL : lName;	    	    
+
+	    // Set the original data field so we don't have to keep reading the
+	    // csv file.
+	    isp.origData = typeof origData === 'undefined' ? isp.origData : origData;
+
+	    if (typeof isp.sorted === 'undefined')
+	    {
+		isp.sorted = _.sortBy(isp.origData, function(el) {
+		    if (isNaN(el[isp.currentX]))
+		    {
+			return el[isp.currentX];
+		    }
+		    else
+		    {
+			return Number(el[isp.currentX]);
+		    }
+		});
+	    }
+	    
+	    // get the values of the data for currentX, currnetY and currentL
+	    // into an appropriate structure.
+	    if (typeof isp.transposed === 'undefined')
+	    {
+		isp.transposed = transpose(isp.origData);
+	    }
+
+	    // Get data for the x, y and L fields.
+	    var xData = isp.transposed[isp.currentX];
+	    var yData = isp.transposed[isp.currentY];
+	    var lData = isp.transposed[isp.currentL];
+
+	    var fData = _.zip(xData, yData, lData);
+
+	    var xBounds = getBounds(xData);
+	    var yBounds = getBounds(yData);
+	    // <div class="col-md-10" id="chartSvg">
+	    //	<svg class="scatterPlot">
+	    // </svg>
+	    $(".scatterPlot").remove();
+	    $("#chartSvg").append("<svg></svg>");
+	    $("#chartSvg svg").attr("class", "scatterPlot");
+	    var svg = d3.select(".scatterPlot")
+		    .attr("width", 1000)
+		    .attr("height", 600);
+
+	    var xInternalSize = digitPrecisionOnBoundary(1.4 * (xBounds.max - xBounds.min), 2, 10, true);
+	    var yInternalSize = digitPrecisionOnBoundary(1.4 * (yBounds.max - yBounds.min), 1, 10, true);
+	    // Viewbox min x and y.
+	    var vbMinX = digitPrecisionOnBoundary(0.8 * xBounds.min, 2, 10, false);
+	    var vbMinY = digitPrecisionOnBoundary(0.8 * yBounds.min, 1, 10, false);
+
+	    svg.attr("viewBox", vbMinX + " " + vbMinY + " "
+		     + xInternalSize + " " + yInternalSize);
+	    svg.attr("preserveAspectRatio", "none");
+	    var graphMinX = digitPrecisionOnBoundary(0.8 * xBounds.min, 2, 10, false);
+	    var graphMinY = digitPrecisionOnBoundary(0.8 * yBounds.min, 1, 10, false);	    
+	    var graph = svg.append("g")
+		    .attr("transform", "translate(0 " +  1.1 * yInternalSize + ") scale(1, -1)");
+	    rect = graph.append("rect")
+		.attr("x", graphMinX)
+		.attr("y", graphMinY)
+		.attr("width", digitPrecisionOnBoundary(1.2 * (xBounds.max - xBounds.min), 1, 10, true))
+		.attr("height", digitPrecisionOnBoundary(1.2 * (yBounds.max - yBounds.min), 1, 10, true)) 
+		.attr("vector-effect", "non-scaling-stroke")
+		.attr("style", "fill:green;stroke:black;stroke-width:2;stroke-opacity:1.0;fill-opacity:0");
+
+	    // Add the axes.
+	    var xStart = digitPrecisionOnBoundary(xBounds.min, 2, 20, false);
+	    //console.log(xBounds.min + " ====> " + xStart);
+	    var xEnd = digitPrecisionOnBoundary(xBounds.max, 2, 10, true);
+	    //console.log(xBounds.max + " ====> " + xEnd);	    
+	    var yStart = digitPrecisionOnBoundary(yBounds.min, 1, 10, false);
+	    //console.log(yBounds.min + " ====> " + yStart);
+	    var yEnd = digitPrecisionOnBoundary(yBounds.max, 1, 10, true);
+	    //console.log(yBounds.max + " ====> " + yEnd);
+	    var xAxis = graph.append("line")
+		    .attr("x1", xStart)
+		    .attr("y1", yStart)
+		    .attr("x2", xEnd)
+		    .attr("y2", yStart)
+		    .attr("style", "stroke:black; stroke-width:1.0; stroke-opacity:1.0")
+		    .attr("vector-effect", "non-scaling-stroke");
+	    var yAxis = graph.append("line")
+		    .attr("x1", xStart)
+		    .attr("y1", yStart)
+		    .attr("x2", xStart)
+		    .attr("y2", yEnd)
+		    .attr("style", "stroke:black; stroke-width:1.0; stroke-opacity:1.0")
+		    .attr("vector-effect", "non-scaling-stroke");
+
+	    // Create X axis ticks:
+	    var xDist = (xEnd - xStart) / 5;
+	    var tickHeight = (yEnd - yStart)/40;
+
+	    var tickX = xStart + xDist;
+	    while (tickX + xDist/5 < xEnd)
+	    {
+		var tick = graph.append("line")
+			.attr("x1", tickX)
+			.attr("y1", yStart)
+			.attr("x2", tickX)
+			.attr("y2", yStart - tickHeight)
+			.attr("style", "stroke:black; stroke-width:1.5; stroke-opacity:1.0")
+			.attr("vector-effect", "non-scaling-stroke");
+		tickX += xDist;
+		graph.append("text")
+		    .attr("x", tickX - xDist/10)
+		    .attr("y", yStart - 2 * tickHeight)
+		    .text(tickX.toString());
+	    }
+
+	    // Create Y axis ticks:
+	    var yDist = (yEnd - yStart) / 10;
+	    var tickWidth = (xEnd - xStart)/60;
+
+	    var tickY = yStart + yDist;
+	    while (tickY + yDist/5 < yEnd)
+	    {
+		var tick = graph.append("line")
+			.attr("x1", xStart)
+			.attr("y1", tickY)
+			.attr("x2", xStart - tickWidth)
+			.attr("y2", tickY)
+			.attr("style", "stroke:black; stroke-width:1.5; stroke-opacity:1.0")
+			.attr("vector-effect", "non-scaling-stroke");
+		graph.append("text")
+		    .attr("x", xStart - 2 * tickWidth)
+		    .attr("y", yStart)
+		    .attr("fill", "red")
+		    .attr("vector-effect", "non-scaling-stroke")
+		    .text(tickX.toString());		
+		tickY += yDist;
+	    }
+
+	    // Place some data.
+	    graph.selectAll("circle")
+		.data(fData)
+		.enter()
+		.append("circle")
+		.attr("cx", function(d) { return d[0]; })
+		.attr("cy", function(d) { return d[1]; })
+		.attr("r", function(d) { return 0.05 * d[1]; })
+		.attr("transform", function(d) {
+		    var bToZero = "translate(" + (-d[0]) + " " + (-d[1]) + ")";
+		    var scale = "scale(" + xInternalSize / (2 * yInternalSize) + " 1)";
+		    var backToOrg = "translate(" + (d[0]) + " " + (d[1]) + ")";
+		    return backToOrg + scale + bToZero;
+		})
+		.attr("stroke", "black")
+		.attr("stroke-width", "1")
+		.attr("fill", "red")
+		.attr("vector-effect", "non-scaling-stroke");
+	    /*_.each(fData, function(nextData) {
+		var x_co = Number(nextData[0]);
+		var y_co = Number(nextData[1]);
+		var label_data = nextData[2];
+	    });
+	     */
+	    
+	};
+
+	function digitPrecisionOnBoundary(n, places, toNearest, up)
+	{
+	    var ns = n.toString();
+	    var dPoint = ns.indexOf(".");
+	    
+	    if (places >= ns.length)
+	    {
+		return n;
+	    }    
+	    if (dPoint < 0)
+	    {
+		// No decimal point.
+		var nsStart = ns.slice(0, places);
+		var nEnd = Array(ns.length - places + 1).join('0');
+		var newN = Number(nsStart.concat(nEnd));
+
+		if (up)
+		{
+		    if (toNearest > Number(ns.slice(places)))
+		    {
+			newN += toNearest;
+		    }
+		    else
+		    {
+			newN += 2 * toNearest;
+		    }
+		}
+		else // !up
+		{
+		    if (Number(ns.slice(places)) >= toNearest)
+		    {
+			newN += toNearest;
+		    }
+		}
+		return newN;
+	    }
+
+	    // There is a decimal point at dPoint.
+	    //var nsStart = Number(ns.slice(0, places + 1));
+	    var nsStart = "";
+	    var nEnd = "";
+	    var newN = "";
+	    if (places < dPoint)
+	    {
+		nsStart = ns.slice(0, places);
+		nEnd = Array(ns.length - places + 1).join('0');
+		nEnd = nEnd.slice(0, dPoint - places) + "." + nEnd.slice(dPoint - places + 1);
+		newN = Number(nsStart.concat(nEnd));	
+		if (up)
+		{
+		    if (toNearest > Number(ns.slice(places)))
+		    {
+			newN += toNearest;
+		    }
+		    else
+		    {
+			newN += 2 * toNearest;
+		    }
+		}
+		else // !up
+		{
+		    if (Number(ns.slice(places)) >= toNearest)
+		    {
+			newN += toNearest;
+		    }
+		}
+	    }
+	    else
+	    {
+		if ((dPoint == 1) && ns[0] == "0")
+		{
+		    places += 1;
+		}
+		nsStart = ns.slice(0, places + 1);
+		nEnd = Array(ns.length - (places)).join('0');
+		newN = Number(nsStart.concat(nEnd));	
+		if (up)
+		{
+		    if (toNearest > Number(ns.slice(places + 1, places + 2)))
+		    {
+			newN += (toNearest / Math.pow(10, places - dPoint + 1));
+		    }
+		    else
+		    {
+			newN += 2 * (toNearest / Math.pow(10, places - dPoint + 1));
+		    }
+		}
+		else // !up
+		{
+		    if (Number(ns.slice(places + 1, places + 2)) >= toNearest)
+		    {
+			newN += (toNearest / Math.pow(10, places - dPoint + 1));
+		    }
+		}	
+	    }
+
+	    return newN;
+	}
+
+
+	/**
+	 * Return the max and min of d.
+	 */
+	function getBounds(d) {
+	    var max = Math.max.apply(null, d);
+	    var min = Math.min.apply(null, d);
+	    return {"max" : max, "min": min};
+	}
+
+	/**
+	 * Event handler that recreates the table sorted by the value of the
+	 * element clicked on that invoked the event handler.
+	 *
+	 * @param event   The dom event.
+	 */
+	var resort = function(event) {
+	    event.preventDefault();
+	    var fieldName = event.target.textContent;
+	    handleData(null, isp.origData, fieldName);
+	};
+
+	/**
+	 * Return the transpose of d.
+	 *
+	 * @param d   An array of objects.
+	 *
+	 * @return An object with the fields from the objects in d mapped to
+	 *         arrays of their values.
+	 */	
+	function transpose(d)
+	{
+	    var table = {};
+	    _.each(d[0], function(el, k) {
+		table[k] = [];
+	    });
+	    _.each(d, function(data) {
+		_.each(data, function(el, k) {
+		    table[k].push(el);
+		});
+	    });
+	    return table;
+	}
+
+	isp.initialize = function(data) {
+	    // Save the original data:
+	    isp.origData = data;
+	    isp.sorted = _.sortBy(isp.origData, function(el) {
+		if (isNaN(el[isp.currentX]))
+		{
+		    return el[isp.currentX];
+		}
+		else
+		{
+		    return Number(el[isp.currentX]);
+		}
+	    });
+	    
+	    // Transpose the data.
+	    isp.transposed = transpose(isp.origData);
+
+	    // Create and add the list element.
+	    $("#" + isp.menuId)
+		.append("<div class='btn-group-vertical' role='group' id='chartSelect'><div>");
+	    
+	    // For each key in isp.transposed, create a button on the page.
+	    var keys = _.keys(isp.transposed);
+	    _.each(keys, function(k) {
+		if (!isNaN(isp.transposed[k][0]))
+		{
+		    var b = "<button type='button', class='btn btn-default'>" + k +
+			    "</button>";
+		    $("#chartSelect").append(b);
+		}
+	    });
+
+	    $("button:contains(" + isp.currentY + ")").addClass("active");
+
+	    $("#chartSelect button").each(function (index, el) {
+		$(el).on("click", isp.handleButtonPush);
+	    });
+	    isp.createChart();
+	};
+
+	isp.handleButtonPush = function(event)
+	{
+	    //console.log("Button clicked was: " + event.target.textContent);
+	    $("#chartSelect button").each(function (index, el) {
+		$(el).removeClass("active");
+	    });
+	    $(event.target).addClass("active");
+	    isp.currentY = event.target.textContent;
+	    isp.createChart();
+	};
+		  
+	d3.csv(csvFile, isp.initialize);
+	return isp;
+    };
+    return sp;
+});
