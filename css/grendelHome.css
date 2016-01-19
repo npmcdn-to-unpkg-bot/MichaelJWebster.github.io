@@ -39,3 +39,11 @@ body {
      padding: 10px 10px;
      border: 1px solid black;
 }
+
+#galtonTable
+{
+    overflow-y: scroll;
+}
+
+
+
