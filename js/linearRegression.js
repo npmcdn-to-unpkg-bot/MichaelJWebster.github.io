@@ -1,5 +1,6 @@
 define(["jquery", "d3", "underscore"], function($, d3, _) {
 
+    var jsRepl = require('util/jsRepl');
     var linRegPage = {};
     linRegPage.doPage = function()
     {
@@ -46,9 +47,11 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	maleData = _.map(maleData, function(val) {
 	    return _.pick(val, "Father", "Mother", "Height");
 	});
+	linRegPage.maleData = maleData;
 
 	var maleTransposed = transpose(maleData);
 	createTable(mTEl, maleData, maleTransposed);
+	linRegPage.maleTransposed = maleTransposed;
 
 	// Create third table with only female data.
 	var femaleData = _.filter(linRegPage.origData, function(rowObj) {
@@ -57,14 +60,16 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	femaleData = _.map(femaleData, function(val) {
 	    return _.pick(val, "Father", "Mother", "Height");
 	});
+	linRegPage.femaleData = femaleData;
 	var femaleTransposed = transpose(femaleData);
-	createTable(fTEl, femaleData, femaleTransposed);	
+	linRegPage.femaleTransposed = femaleTransposed;
+	createTable(fTEl, femaleData, femaleTransposed);
+
+	runRepl1();
     }
 
     function createTable(tEl, sorted, tableObject) {
 	
-	console.log("Got some data");
-
 	// Empty the table
 	tEl.empty();
 	
@@ -143,7 +148,12 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	createTable($(event.target).closest("div"), sorted, tableObject);
     };
 
-
+    function runRepl1() {
+	var repl = jsRepl.getRepl($("#repl1"));
+	repl.setDebug(true);
+	repl.writeString("Javascript Repl:\n");
+	repl.sendObject(linRegPage.maleData[0]);
+    }
     return linRegPage;  
 });
 

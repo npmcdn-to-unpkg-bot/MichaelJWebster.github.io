@@ -71,7 +71,7 @@
 
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="row-fluid">
-	<div class="span10 offset1">
+	<div class="col-md-11">
           <h1>Linear Regression</h1>
           <p>Linear Regression is a minimisation problem. We are given a set of
 	    measurements of independent variables, and a dependent variable, and we
@@ -128,9 +128,10 @@
 	    a dataset containing information about the height of parents and their children from
 	    an 1885 study by <a href="http://www.math.uah.edu/stat/biographies/Galton.html">
 	      Francis Galton</a>.
-	</div> <!-- class="span10 offset1" -->
-	<div class="container">
-	  <div class="row">
+	</div> <!-- class="col-md-11" -->
+      </div>
+      <div class="container-fluid">
+	<div class="row-fluid">
 	  <div class="col-md-8">
 	    <!-- text -->
 	    <p>The original dataset contains the following columns:</p>
@@ -156,6 +157,8 @@
 	      Currently for the male data set we have our data in an array of objects where
 	      each object contains values for the Father, Mother and Height fields:
 	    </p>
+	    <textarea class="form-control" rows="10" id="repl1">
+	    </textarea>
 	    
 	  </div>
 	  <div class="col-md-4">
