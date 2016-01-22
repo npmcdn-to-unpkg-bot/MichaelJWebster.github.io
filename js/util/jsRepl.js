@@ -51,7 +51,7 @@ define(["underscore"], function(_) {
 	    if (repl.debug) {
 		// Print out a debug message.
 		console.log("Received Message from worker.");
-		console.log(e.data);
+		//console.log(e.data);
 	    }
 	    var s = "";
 	    if (typeof e.data === "string") {
@@ -104,7 +104,7 @@ define(["underscore"], function(_) {
 	repl.sendObject = function(obj) {
 	    if (repl.debug) {
 		console.log("Posting an object to the worker. Input is:\n");
-		console.log(obj);
+		//console.log(obj);
 	    }
 	    repl.worker.postMessage(obj);
 	};

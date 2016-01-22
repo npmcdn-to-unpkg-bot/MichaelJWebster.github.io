@@ -55,9 +55,25 @@ body {
     //border: 1px solid black;
 }
 
-input.clear-checkbox{ 
-    background: #888; // !important;
-    border: 1px solid black; // !important; 
-    color: #000; // !important;
-    border-radius:5; //!important;
+.chart-selector-button
+{
+    margin: 0px 50px 0px 0px;
+    width: 120px;
 }
+
+.spaced-vertical
+{
+    //border: 1px solid black;
+}
+
+.spaced-vertical label,
+{
+    margin: 5px 10px 5px 0px;
+    width: 100px;
+}
+
+.spaced-vertical input
+{
+    margin: 5px 0px 5px 0px;
+}
+

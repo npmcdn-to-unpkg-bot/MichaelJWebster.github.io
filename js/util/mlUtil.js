@@ -57,43 +57,42 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    var ds1ButtonLabel = dset1.dataNameShort;
 	    var ds1CheckLabels =
 		    _.flatten(_.pluck([dset1.main].concat(dset1.secondary), 'shortLabel'));
-	    var ds2ButtonLabel = dset1.dataNameShort;
+	    var ds2ButtonLabel = dset2.dataNameShort;
 	    var ds2CheckLabels =
 		    _.flatten(_.pluck([dset2.main].concat(dset2.secondary), 'shortLabel'));
 
 	    function addControls(bLabel, cbLabels) {
-		var currentEl = d3.select(cl.mId)
-			.append("span")
+		/*var currentDiv = d3.select(cl.mId)
+			.append("div")
+			.attr("class", "spaced-button-group");*/
+		//var mainButton = currentDiv.append("button")
+		var mainButton = d3.select(cl.mId)
 			.append("button")
 			.attr("type", "button")
-			.attr("class", "btn btn-default btn-sm")
+			.attr("class", "btn btn-info chart-selector-button")
 			.text(bLabel);
-		// need to add a handler here.
-		var button1 = d3.select(cl.mId + " button");
-		var spans = d3.selectAll(cl.mId + " span")[0];
-		var currentSpan = _.last(spans);
-		var labels = d3.select(currentSpan)
-			.append("div")
-			.attr("class", "btn-group")
-			.attr("data-toggle", "buttons")
-			.selectAll("label")
+
+		var currentDiv = d3.select(cl.mId).append("div")
+			.attr("class",  "btn-group-vertical spaced-vertical")
+			.attr("role", "group");
+		
+		var labels = currentDiv.selectAll("label")
 			.data(cbLabels)
 			.enter()
 			.append("label")
-			.attr("class", "checkbox-inline")
-			.text(function(d) { return d;})
-			.insert("input")
-			.attr("type", "checkbox")
-			.attr("class", "clear-checkbox")		    
-			.attr("value", "");
+			.attr("class", "checkbox");
 
-		/*labels.append("input")
-		    .attr("type", "checkbox")
-		    .attr("class", "clear-checkbox")		    
-		    .attr("value", "");*/
+		labels.each(function(d, i) {
+		    var text = document.createTextNode(d);
+		    var ip = document.createElement("input");
+		    ip.setAttribute("type", "checkbox");
+		    ip.setAttribute("id", d);
+		    this.appendChild(ip);
+		    this.appendChild(text);
+		});
 
-		//.attr("class", "btn btn-primary btn-sm")
-		$(button1).click();
+
+		$(mainButton).click();
 	    }
 	    addControls(ds1ButtonLabel, ds1CheckLabels);
 	    addControls(ds2ButtonLabel, ds2CheckLabels);
