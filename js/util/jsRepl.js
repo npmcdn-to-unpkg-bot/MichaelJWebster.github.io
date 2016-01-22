@@ -1,5 +1,6 @@
-define(function(require) {
+define(["underscore"], function(_) {
     var jsRepl = {};
+    //var _ = require("underscore");
 
     jsRepl.getRepl = function(parentEl) {
 	repl = {};
@@ -7,7 +8,8 @@ define(function(require) {
 	repl.parent = parentEl;
 	var prompt = "> ";
 
-	repl.worker = new Worker("http://www.lem.com/js/util/replWorker.js");
+	//repl.worker = new Worker("http://www.lem.com/js/util/replWorker.js");
+	repl.worker = new Worker("http://www.mygithub.dev/js/util/replWorker.js");
 
 	function writePrompt() {
 	    if (repl.debug) {
@@ -23,7 +25,7 @@ define(function(require) {
 	    }
 	    var r = $(repl.parent);
 	    r.val(r.val() + "\n" + msg);
-	    writePrompt();
+	    //writePrompt();
 	};
 
 	repl.readLastString = function() {
@@ -51,7 +53,30 @@ define(function(require) {
 		console.log("Received Message from worker.");
 		console.log(e.data);
 	    }
-	    repl.writeString(e.data.toString());
+	    var s = "";
+	    if (typeof e.data === "string") {
+		s = e.data;
+	    }
+	    else {
+		if (e.data instanceof Array)
+		{
+		    s += "Array of Length: " + e.data.length + "\n";
+		    s += "Array[0] == ";
+		    s += "{" +
+			_.reduce(e.data[0], function(memo, val, keyIdx) {
+			    return memo + "\n\t" + keyIdx + ": " + val + ",";
+			}, "")
+			+ "\n}\n";
+		}
+		else {
+		    s = "{" +
+			_.reduce(e.data, function(memo, val, keyIdx) {
+			    return memo + "\n" + keyIdx + ": " + val + ",";
+			}, "") + "}\n";
+		}
+	    }
+
+	    repl.writeString(s);
 	    repl.messCb && repl.messCb(e);
 	};
 
@@ -97,6 +122,10 @@ define(function(require) {
 		repl.worker.postMessage(line);
 	    }
 	});
+
+	repl.terminate = function() {
+	    repl.worker.terminate();
+	};
 	
 	return repl;
     };

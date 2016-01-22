@@ -157,9 +157,23 @@
 	      Currently for the male data set we have our data in an array of objects where
 	      each object contains values for the Father, Mother and Height fields:
 	    </p>
-	    <textarea class="form-control" rows="10" id="repl1">
+	    <textarea class="form-control" rows="8" id="repl1">
 	    </textarea>
-	    
+	    <p>A reasonable division of the data into train, test and cross validation sets is
+	      to use 60% of the data for training, and 20% each for cross validation and test sets.
+	    </p>
+	    <p>The data is not a completely random sample, as there is (at least) the family relationship
+	      between certain individuals to consider. In order to avoid biasing our data subsets,
+	      we randomise the male height data set using a shuffle before we divy it up.
+	    </p>
+	    <h3>Scatter Plot of data sets</h3>
+	    <p>It is helpful to have a quick look at the data before running a machine learning
+	      algorithm. You might learn something about the data, or find some problems of
+	      missing data you weren't aware of. A scatter plot would seem reasonable for Galton's
+	      data, except for the fact that we have 2 independent variables - the height of both
+	      the mother and the father - so the plot would have to be 3d. I'm just going to do
+	      a 2D plot using one or the other of the mother's or father's heights as the
+	      independent variable.
 	  </div>
 	  <div class="col-md-4">
 	    <h3>Galton Data - original table:</h3>
@@ -173,8 +187,17 @@
 	    </div>	    
 	  </div>
 	</div> <!-- class=="row-fluid"-->
+	<div class="row-fluid">
+	  <!-- Add the scatter plot here. -->
+	  <h1 class="indentText">Scatter Plot for Male and Female Height Data</h1>
+	  <div class="col-md-4 chart1" id="mfMenu">
+	    <h4>Select Dataset</h4>
+	  </div>
+	  <div class="col-md-8" id="mfSvg">
+	  </div>
 	</div>
-      <div
+      </div>
+    </div>
 
 
     </div> <!-- container-fluid -->

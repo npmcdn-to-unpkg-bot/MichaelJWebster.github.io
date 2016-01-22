@@ -1,6 +1,7 @@
 define(["jquery", "d3", "underscore"], function($, d3, _) {
 
     var jsRepl = require('util/jsRepl');
+    var mlUtil = require('util/mlUtil');
     var linRegPage = {};
     linRegPage.doPage = function()
     {
@@ -9,12 +10,68 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 
 	d3.csv(csvDataFile, function(data) {
 	    setupInitialTables(data);
+	    setupScatterPlots();
 	});
     };
     $(document).on("load", linRegPage.doPage());
 
+    function setupScatterPlots() {
+	var scatterMenuId = "#mfMenu";
+	var scatterGraphId = "#mfSvg";
+	linRegPage.maleDataShuffled = mlUtil.shuffleData(linRegPage.maleData);
+	linRegPage.femaleDataShuffled = mlUtil.shuffleData(linRegPage.femaleData);
+	var maleDataSets = mlUtil.divideData(linRegPage.maleDataShuffled, [60, 20, 20]);
+	linRegPage.maleTrain = maleDataSets[0];
+	linRegPage.maleCv = maleDataSets[1];
+	linRegPage.maleTest = maleDataSets[2];
+	var femaleDataSets = mlUtil.divideData(linRegPage.femaleDataShuffled, [60, 20, 20]);
+	linRegPage.femaleTrain = femaleDataSets[0];
+	linRegPage.femaleCv = femaleDataSets[1];
+	linRegPage.femaleTest = femaleDataSets[2];	
+	//var scatterGraph = webChart.createScatterGraph($(mfSvg), linRegPage.maleData, linRegPage.femaleData);
+	var maleScatter = {
+	    dataName : "Male Child Height Data",
+	    dataNameShort : "Child Height M",
+	    main : { label: "Male Training Data", d: linRegPage.maleTrain,
+		     shortLabel: "M Training"},
+	    secondary: [
+		{ label: "Male Cross Validation Data", d:linRegPage.maleCv,
+		  shortLabel: "M Cross Validation"},
+		{ label: "Male Test Data", d:linRegPage.maleTest,
+		  shortLabel: "M Test"}]
+	};
+	var femaleScatter = {
+	    dataName : "Female Child Height Data",
+	    dataNameShort : "Child Height F",
+	    main : { label: "Female Training Data", d: linRegPage.femaleTrain,
+		     shortLabel: "F Training"},
+	    secondary: [
+		{ label: "Female Cross Validation Data", d:linRegPage.femaleCv,
+		  shortLabel: "F Cross Validation"},
+		{ label: "Female Test Data", d:linRegPage.femaleTest,
+		  shortLabel: "F Test"}
+	    ]	
+	};
+	xLabel = "Parent Height in inches.";
+	yLabel = "Child Height in inches.";
+	var scatterPlots = mlUtil.createScatterPlots
+	(
+	    scatterMenuId,
+	    scatterGraphId,
+	    maleScatter,
+	    femaleScatter,
+	    xLabel,
+	    yLabel
+	);
+    }
+
     function setupInitialTables(data) {
-	linRegPage.origData = data;	
+	linRegPage.origData = _.map(data, function(val) {
+	    val.Father = Number(val.Father);
+	    val.Mother = Number(val.Mother);
+	    val.Height = Number(val.Height);
+	    return val;
+	});
 	var tEl = $("#galtonTable");
 	var mTEl = $("#maleTable");
 	var fTEl = $("#femaleTable");
@@ -151,8 +208,10 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
     function runRepl1() {
 	var repl = jsRepl.getRepl($("#repl1"));
 	repl.setDebug(true);
-	repl.writeString("Javascript Repl:\n");
-	repl.sendObject(linRegPage.maleData[0]);
+	repl.writeString("Male Height Data is:");
+	repl.sendObject(linRegPage.maleData);
+	// Close the web worker after some time.
+	setTimeout(function() {repl.terminate();}, 1000);
     }
     return linRegPage;  
 });
