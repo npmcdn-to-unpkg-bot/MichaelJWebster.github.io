@@ -51,6 +51,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    .append("svg");
 	cl.svg.attr("width", cl.pWidth)
 	    .attr("height", cl.pHeight);
+	
 
 	cl.createScatter = function(gId, dsets) {
 	    // Create the top g element under which all the scatter plot data will
@@ -68,7 +69,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 
 
 	    // Create a top level group for each dataset passed in dsets.
-	    var second = top.selectAll("g")
+	    var dataGroups = top.selectAll("g")
 		    .data(function(d) {
 			return d.dataSet;
 		    })
@@ -77,58 +78,20 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    .attr("id", function(d) {
 			return d.shortLabel;
 		    });
-	    
 
-		/*.data(function(d) {
-			return d.dataSet;
-		    });*/
-	    /*
-		    .selectAll("g")
-		    .data(function(d, i) {
-			return d.dataSet[i];
-		    });*/
-
-	    var dg = second.selectAll("g")
+	    var subGroups = dataGroups.selectAll("g")
 		    .data(function(d) {
-			return d.dataSet;
-		    })
-		    .enter()
-		    .append("g");
-
-	    /*
-		    .attr("id", function(d) {
-			return d.shortName;
-		    });*/
-	    /*
-		    .data(function(d, i) {
-			return d[i].dataSet;
-		    });*/
-
-	    /*var dataGroups = second.selectAll("g")
-		    .data(function(d, i) {
-			return d.dataSet[i];
-		    })
-		    .enter()
-		    .append("g")
-		    .attr("id", function(d) {
-			return d.shortLabel;
-		    });*/
-		/*.data(function(d) {
 			return d.d;
-		    });*/
-
-	    // For each group in second, create groups for each of the
-	    // groups recorded in the data's dataSet array of objects.
-
-	    /*var second = top.selectAll("g")
-		    .data(function(d) { return d; })
+		    })
 		    .enter()
-		    .append("g");*/
-	    
-		/*.data(function(d) {
-			return d[dataSet];
-		    });*/
-	    
+		    .append(function(d, i) {
+			if (i == 0) {
+			    cl.currentColourNum = cl.currentColourNum + 1;
+			}
+			var x = d.Father;
+			var y = d.Height;
+			return cl.colourShapeCombos[cl.currentShape](x, y, cl.xScale, cl.yScale);
+		    });
 	};
 
 	cl.createControls = function() {
@@ -214,7 +177,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    cl.yAxis = d3.svg.axis();
 	    cl.yAxisScale = d3.scale.linear()
 		.domain([bounds.minH, bounds.maxH])
-		.range([cl.yScale(bounds.maxH), cl.yScale(bounds.minH)])
+		.range([cl.yScale(bounds.minH), cl.yScale(bounds.maxH)])
 		.nice();
 	    cl.yAxis.scale(cl.yAxisScale);
 	    cl.yAxis.orient("left");
@@ -251,6 +214,49 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		});
 	    
 	};
+	var svgns = "http://www.w3.org/2000/svg";
+	cl.currentShape = 0;
+	cl.colourShapeCombos = [
+	    function(x, y, xScale, yScale) {
+		var colour = cl.colours[cl.currentColourNum];
+		var c = document.createElementNS(svgns, "circle");
+		c.setAttribute("cx", xScale(x));
+		c.setAttribute("cy", yScale(y));
+		c.setAttribute("fill", colour);
+		c.setAttribute("r", 2);
+		return c;
+	    },
+	    function(x, y, xScale, yScale) {
+		var colour = cl.colours[cl.currentColourNum];
+		var c = document.createElementNS(svgns, "rect");
+		c.setAttribute("x", xScale(x) - 1.5);
+		c.setAttribute("y", yScale(y) - 1);
+		c.setAttribute("width", 3);
+		c.setAttribute("height", 2);
+		c.setAttribute("fill", colour);
+		return c;		
+	    }
+	];
+	
+	+function initColours()
+	{
+	    cl.colours =
+		    ['rgb(142,1,82)','rgb(197,27,125)','rgb(50,119,174)',
+		     'rgb(241,22,12)','rgb(153,124,239)','rgb(47,247,147)',
+		     'rgb(115,45,103)','rgb(184,225,134)','rgb(127,188,65)',
+		     'rgb(77,146,33)','rgb(39,100,25)', 'rgb(165,0,38)',
+		     'rgb(215,48,39)','rgb(244,109,67)','rgb(253,174,97)',
+		     'rgb(154,224,144)','rgb(255,255,19)','rgb(224,24,248)',
+		     'rgb(171,217,233)','rgb(116,173,209)','rgb(69,117,180)',
+		     'rgb(49,54,149)', 'rgb(84,48,5)','rgb(140,81,10)',
+		     'rgb(191,129,45)','rgb(223,194,125)','rgb(46,232,195)',
+		     'rgb(90,10,49)','rgb(199,234,229)','rgb(128,205,193)',
+		     'rgb(53,151,143)','rgb(1,102,94)','rgb(0,60,48)'
+		    ];
+
+	    cl.currentColourNum = -1;
+	}();
+
 	cl.createAxes();
 	cl.createScatter(cl.gId, [dset1, dset2]);
 	cl.createControls();
