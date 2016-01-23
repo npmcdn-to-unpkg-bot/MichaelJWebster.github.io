@@ -28,7 +28,6 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	linRegPage.femaleTrain = femaleDataSets[0];
 	linRegPage.femaleCv = femaleDataSets[1];
 	linRegPage.femaleTest = femaleDataSets[2];	
-	//var scatterGraph = webChart.createScatterGraph($(mfSvg), linRegPage.maleData, linRegPage.femaleData);
 	var maleScatter = {
 	    dataName : "Male Child Height Data",
 	    dataNameShort : "Child Height M",
