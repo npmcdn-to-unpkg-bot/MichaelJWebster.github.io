@@ -70,7 +70,9 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 			.append("button")
 			.attr("type", "button")
 			.attr("class", "btn btn-info chart-selector-button")
-			.text(bLabel);
+			.text(bLabel)
+			.data([bLabel])
+			.on("click", menuMainHandleClicks);
 
 		var currentDiv = d3.select(cl.mId).append("div")
 			.attr("class",  "btn-group-vertical spaced-vertical")
@@ -91,11 +93,24 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    this.appendChild(text);
 		});
 
+		labels.selectAll("input")
+		    .data(function(d) { return [d]; })
+		    .on("click", menuCheckboxHandleClicks);
 
 		$(mainButton).click();
 	    }
 	    addControls(ds1ButtonLabel, ds1CheckLabels);
 	    addControls(ds2ButtonLabel, ds2CheckLabels);
+	};
+
+	function menuMainHandleClicks(datum) {
+	    console.log("Clicked Menu Button.");
+	    console.log("Event data is: " + datum);
+	};
+
+	function menuCheckboxHandleClicks(datum) {
+	    console.log("Clicked Menu Checkbox.");
+	    console.log("Data is: " + datum);
 	};
 
 	cl.createAxes = function() {
