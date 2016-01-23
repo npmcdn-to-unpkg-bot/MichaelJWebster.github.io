@@ -53,19 +53,72 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    .attr("height", cl.pHeight);
 
 	cl.createScatter = function(gId, dsets) {
+	    // Create the top g element under which all the scatter plot data will
+	    // go and be displayed, and under that a group for each dataset.
 	    var top = d3.select(gId + " svg")
 		    .append("g")
 		    .attr("id", "ScatterElements")
-		    .data([dsets]);
-
-	    var second = top.selectAll("g")
-		    .data(function(d) { return d; })
+	    	    .selectAll("g")
+		    .data(dsets)
 		    .enter()
 		    .append("g")
 		    .attr("id", function(d) {
 			return d.dataName;
 		    });
 
+
+	    // Create a top level group for each dataset passed in dsets.
+	    var second = top.selectAll("g")
+		    .data(function(d) {
+			return d.dataSet;
+		    })
+		    .enter()
+		    .append("g")
+		    .attr("id", function(d) {
+			return d.shortLabel;
+		    });
+	    
+
+		/*.data(function(d) {
+			return d.dataSet;
+		    });*/
+	    /*
+		    .selectAll("g")
+		    .data(function(d, i) {
+			return d.dataSet[i];
+		    });*/
+
+	    var dg = second.selectAll("g")
+		    .data(function(d) {
+			return d.dataSet;
+		    })
+		    .enter()
+		    .append("g");
+
+	    /*
+		    .attr("id", function(d) {
+			return d.shortName;
+		    });*/
+	    /*
+		    .data(function(d, i) {
+			return d[i].dataSet;
+		    });*/
+
+	    /*var dataGroups = second.selectAll("g")
+		    .data(function(d, i) {
+			return d.dataSet[i];
+		    })
+		    .enter()
+		    .append("g")
+		    .attr("id", function(d) {
+			return d.shortLabel;
+		    });*/
+		/*.data(function(d) {
+			return d.d;
+		    });*/
+
+	    // For each group in second, create groups for each of the
+	    // groups recorded in the data's dataSet array of objects.
 
 	    /*var second = top.selectAll("g")
 		    .data(function(d) { return d; })
