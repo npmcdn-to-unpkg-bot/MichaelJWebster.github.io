@@ -31,25 +31,26 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	var maleScatter = {
 	    dataName : "Male Child Height Data",
 	    dataNameShort : "Child Height M",
-	    main : { label: "Male Training Data", d: linRegPage.maleTrain,
+	    dataSet : [
+		{ label: "Male Training Data", d: linRegPage.maleTrain,
 		     shortLabel: "M Training"},
-	    secondary: [
 		{ label: "Male Cross Validation Data", d:linRegPage.maleCv,
 		  shortLabel: "M Cross Validation"},
 		{ label: "Male Test Data", d:linRegPage.maleTest,
-		  shortLabel: "M Test"}]
+		  shortLabel: "M Test"}
+	    ]
 	};
 	var femaleScatter = {
 	    dataName : "Female Child Height Data",
 	    dataNameShort : "Child Height F",
-	    main : { label: "Female Training Data", d: linRegPage.femaleTrain,
-		     shortLabel: "F Training"},
-	    secondary: [
+	    dataSet : [
+		{ label: "Female Training Data", d: linRegPage.femaleTrain,
+		  shortLabel: "F Training"},
 		{ label: "Female Cross Validation Data", d:linRegPage.femaleCv,
 		  shortLabel: "F Cross Validation"},
 		{ label: "Female Test Data", d:linRegPage.femaleTest,
 		  shortLabel: "F Test"}
-	    ]	
+	    ]
 	};
 	xLabel = "Parent Height in inches.";
 	yLabel = "Child Height in inches.";

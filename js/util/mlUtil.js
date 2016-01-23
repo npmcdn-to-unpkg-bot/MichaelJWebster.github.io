@@ -52,14 +52,40 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	cl.svg.attr("width", cl.pWidth)
 	    .attr("height", cl.pHeight);
 
+	cl.createScatter = function(gId, dsets) {
+	    var top = d3.select(gId + " svg")
+		    .append("g")
+		    .attr("id", "ScatterElements")
+		    .data([dsets]);
+
+	    var second = top.selectAll("g")
+		    .data(function(d) { return d; })
+		    .enter()
+		    .append("g")
+		    .attr("id", function(d) {
+			return d.dataName;
+		    });
+
+
+	    /*var second = top.selectAll("g")
+		    .data(function(d) { return d; })
+		    .enter()
+		    .append("g");*/
+	    
+		/*.data(function(d) {
+			return d[dataSet];
+		    });*/
+	    
+	};
+
 	cl.createControls = function() {
 	    cl.menuParent = $(mId);
 	    var ds1ButtonLabel = dset1.dataNameShort;
 	    var ds1CheckLabels =
-		    _.flatten(_.pluck([dset1.main].concat(dset1.secondary), 'shortLabel'));
+		    _.flatten(_.pluck(dset1.dataSet, 'shortLabel'));
 	    var ds2ButtonLabel = dset2.dataNameShort;
 	    var ds2CheckLabels =
-		    _.flatten(_.pluck([dset2.main].concat(dset2.secondary), 'shortLabel'));
+		    _.flatten(_.pluck(dset2.dataSet, 'shortLabel'));
 
 	    function addControls(bLabel, cbLabels) {
 		/*var currentDiv = d3.select(cl.mId)
@@ -173,14 +199,14 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    
 	};
 	cl.createAxes();
+	cl.createScatter(cl.gId, [dset1, dset2]);
 	cl.createControls();
+	
     };
 
     function getBounds(d1, d2) {
-	var d1_data_array = [d1.main].concat(d1.secondary);
-	var d1_data = _.flatten(_.pluck(d1_data_array, 'd'));
-	var d2_data_array = [d2.main].concat(d2.secondary);
-	var d2_data = _.flatten(_.pluck(d2_data_array, 'd'));
+	var d1_data = _.flatten(_.pluck(d1.dataSet, 'd'));
+	var d2_data = _.flatten(_.pluck(d2.dataSet, 'd'));
 	var maxParent = Number.MIN_VALUE;
 	var minParent = Number.MAX_VALUE;
 	var maxHeight = Number.MIN_VALUE;
