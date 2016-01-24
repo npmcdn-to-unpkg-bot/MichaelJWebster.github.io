@@ -2,6 +2,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 
     var jsRepl = require('util/jsRepl');
     var mlUtil = require('util/mlUtil');
+    var MdArray = require('util/MdArray');
     var linRegPage = {};
     linRegPage.doPage = function()
     {
@@ -11,6 +12,8 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	d3.csv(csvDataFile, function(data) {
 	    setupInitialTables(data);
 	    setupScatterPlots();
+	    setupArrays();
+	    setupRegression("Male", "Father");
 	});
     };
     $(document).on("load", linRegPage.doPage());
@@ -52,7 +55,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		  shortLabel: "F Test"}
 	    ]
 	};
-	xLabel = "Parent Height in inches.";
+	xLabel = "Father's Height in inches.";
 	yLabel = "Child Height in inches.";
 	var scatterPlots = mlUtil.createScatterPlots
 	(
@@ -63,6 +66,68 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    xLabel,
 	    yLabel
 	);
+    }
+
+    function setupRegression(childSex, parent) {
+	var xData = [];
+	var yData = [];
+	
+	if (childSex === "Male") {
+	    yData = linRegPage.heightMale;
+	    if (parent === "Father") {
+		xData = linRegPage.fatherDataMale;
+	    }
+	    else {
+		xData = linRegPage.motherDataMale;
+	    }
+	}
+	else {
+	    yData = linRegPage.heightFemale;
+	    if (parent === "Father") {
+		xData = linRegPage.fatherDataFemale;
+	    }
+	    else {
+		xData = linRegPage.motherDataFemale;
+	    }
+	}
+
+	var xLength = xData.length;
+	var yLength = yData.length;
+	assert(xLength === yLength,
+	       "Cannot perform linear regression with different length X and Y vectors.");
+	       
+	// Create X as an xLength MdArray containing the xData.
+	var X = new MdArray({data: xData, shape: [xLength, 1]});
+
+	// Create Y as an xLength Md Array containing the yData.
+	var Y = new MdArray({data: yData, shape: [xLength, 1]});
+
+	// We should now have X and Y representing the data we've been given. It
+	// remains to append a column of 1's to X.
+    }
+
+    function setupArrays() {
+	// Create our X and Y data arrays for each of the data sets, and for each
+	// of father and mother.
+	linRegPage.fatherDataMale = _.map(linRegPage.maleTrain, function(x) {
+	    return x.Father;
+	});
+	linRegPage.motherDataMale = _.map(linRegPage.maleTrain, function(x) {
+	    return x.Mother;
+	});
+	linRegPage.heightMale = _.map(linRegPage.maleTrain, function(x) {
+	    return x.Height;
+	});
+
+	linRegPage.fatherDataFemale = _.map(linRegPage.femaleTrain, function(x) {
+	    return x.Father;
+	});
+	linRegPage.motherDataFemale = _.map(linRegPage.femaleTrain, function(x) {
+	    return x.Mother;
+	});
+	linRegPage.heightFemale = _.map(linRegPage.femaleTrain, function(x) {
+	    return x.Height;
+	});
     }
 
     function setupInitialTables(data) {
@@ -213,6 +278,22 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	// Close the web worker after some time.
 	setTimeout(function() {repl.terminate();}, 1000);
     }
-    return linRegPage;  
+
+    /**
+     * Raise an error if possible, when there is a violation of the expectations
+     * of the ml-ndarray module.
+     */
+    function assert(condition, message) {
+	'use strict';
+	if (!condition) {
+            message = message || "Assertion failed";
+            if (typeof Error !== "undefined") {
+		throw new Error(message);
+            }
+            throw message;
+	}
+    }
+    return linRegPage;
+    
 });
 

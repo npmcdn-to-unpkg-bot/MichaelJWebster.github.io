@@ -10,7 +10,9 @@
     <meta name="author" content="Michael Webster.">
     <link rel="icon" href="../img/black-white-metro-globe-icon.png">
     <title>Linear Regression.</title>
-
+    <!-- google code prettifier. -->
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js">
+    </script>
     <!-- Bootstrap core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap theme -->
@@ -194,6 +196,60 @@
 	    <h4>Select Dataset</h4>
 	  </div>
 	  <div class="col-md-8" id="mfSvg">
+	  </div>
+	</div>
+      </div>
+      <div class="container-fluid">
+	<div class="row-fluid">
+	  <div class="col-md-11">
+            <h4>Scatter Plot observations</h4>
+	    <p>From going through the different categories in the scatter plot data
+	      sets, it appears that we have a reasonable decomposition of our data
+	      into training, cross validation and test sets - ie. the data seems fairly
+	      evenly dispursed through those sets. It also appears that there is some
+	      relationship between the Father's height in inches and the child height.</p>
+
+	    <p><em>NOTE:</em> We could also look at the relationship between maternal
+	      height and child height.</p>
+
+	    <p><h3>Data structures used</h3>
+	      For our scatter plot, we used male and female datasets stored in separate objects
+	      like so:
+	    </p>
+
+	    <pre class="prettyprint">
+	      <code class="lang-js">
+	      var maleScatter = {
+                  dataName : "Male Child Height Data",
+	          dataNameShort : "Child Height M",
+	          dataSet : [
+	              { label: "Male Training Data", d: linRegPage.maleTrain,
+	                  shortLabel: "M Training"},
+	              { label: "Male Cross Validation Data", d:linRegPage.maleCv,
+                          shortLabel: "M Cross Validation"},
+	              { label: "Male Test Data", d:linRegPage.maleTest,
+	                  shortLabel: "M Test"}
+	         ]
+	      };
+	      var femaleScatter = {
+	          dataName : "Female Child Height Data",
+	          dataNameShort : "Child Height F",
+	          dataSet : [
+	          { label: "Female Training Data", d: linRegPage.femaleTrain,
+	              shortLabel: "F Training"},
+	          { label: "Female Cross Validation Data", d:linRegPage.femaleCv,
+	              shortLabel: "F Cross Validation"},
+	          { label: "Female Test Data", d:linRegPage.femaleTest,
+	              shortLabel: "F Test"}
+	          ]
+	      };
+	      </code>
+	    </pre>
+	    <p> We will begin by using the maleScatter.dataSet[0].d male height training
+	      data.
+
+	      We start by creating <b>X</b> and <b>Y</b> vectors like this:
+	      </p>
 	  </div>
 	</div>
       </div>
