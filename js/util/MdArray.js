@@ -339,9 +339,8 @@ MdArray.prototype = {
 	else {
 	    var transposed =
 		    new MdArray(
-			{data : this.data.slice(0), shape: this.dims.slice(0)}
+			{data : this.data.slice(0), shape: this.dims.slice(0).reverse()}
 		    );
-	    transposed.strides.reverse();
 	    return transposed;
 	}
     },
