@@ -74,45 +74,39 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	
 	if (childSex === "Male") {
 	    yData = linRegPage.heightMale;
-	    if (parent === "Father") {
-		xData = linRegPage.fatherDataMale;
-	    }
-	    else {
-		xData = linRegPage.motherDataMale;
-	    }
+	    xData = linRegPage.fatherDataMale.concat(linRegPage.motherDataMale);
 	}
 	else {
 	    yData = linRegPage.heightFemale;
-	    if (parent === "Father") {
-		xData = linRegPage.fatherDataFemale;
-	    }
-	    else {
-		xData = linRegPage.motherDataFemale;
-	    }
+	    xData = linRegPage.fatherDataFemale.concat(linRegPage.motherDataFemale);
 	}
 
-	var xLength = xData.length;
-	var yLength = yData.length;
-	assert(xLength === yLength,
+	var xRows = xData.length/2;
+	var yRows = yData.length;
+	assert(xRows === yRows,
 	       "Cannot perform linear regression with different length X and Y vectors.");
 	       
-	// Create X as an xLength MdArray containing the xData.
-	var X = new MdArray({data: xData, shape: [xLength, 1]});
+	// Create X as an MdArray containing a row for each of the female and male parent
+	// data.
+	var X = new MdArray({data: xData, shape: [2, xRows]});
+
+	// Transpose the array to change it to having a column for the male parent heights
+	// and another for the female parent heights.
+	X = X.T();
 
 	// Create Y as an xLength Md Array containing the yData.
-	var Y = new MdArray({data: yData, shape: [xLength, 1]});
+	var Y = new MdArray({data: yData, shape: [yRows, 1]});
 
 	// We should now have X and Y representing the data we've been given. It
 	// remains to append a column of 1's to X.
 	X = X.addOnes();
-	//console.log("X is now:\n" + X);
+
 	// Create a theta array of all ones.
 	var theta = MdArray.ones({shape : [X.dims[1], 1]});
 
 	// Get predictions
 	var predictions = getPrediction(X, theta);
 
-	//console.log("predictions are:\n" + predictions);
     }
 
     /**
