@@ -246,10 +246,72 @@
 	      </code>
 	    </pre>
 	    <p> We will begin by using the maleScatter.dataSet[0].d male height training
-	      data.
-
+	      data. We have our Father of Male children height data in <em>xData</em> and
+	      our male child data in <em>yData</em>. <b>Note:</b> in this case we're
+	      trying to find a predictor for child height based on father's height, so
+	      child height is our Y vector.
+	    </p>
+	    <p>
 	      We start by creating <b>X</b> and <b>Y</b> vectors like this:
-	      </p>
+	    </p>
+	    <pre class="prettyprint">
+	      <code class="lang-js">
+		var xLength = xData.length;
+		var yLength = yData.length;
+	       
+		// Create X as an xLength MdArray containing the xData.
+		var X = new MdArray({data: xData, shape: [xLength, 1]});
+
+		// Create Y as an xLength Md Array containing the yData.
+		var Y = new MdArray({data: yData, shape: [xLength, 1]});
+
+		// Add a column of 1's to the X data to allow us to find the
+		// Y intercept of our regression line.
+		X = X.addOnes();
+
+		// Create our theta as an MdArray with as many rows as X has
+		// columns, all values set to 1.
+		var theta = MdArray.ones({shape : [X.dims[1], 1]});
+		</code>
+	    </pre>
+	    <p><b>Note: </b>The MdArray class will be discussed later. It's a very simple
+	      implementation of multi-dimensional arrays in javascript.
+	    </p>
+
+	    <h3>Define the requirement (again):</h3>
+	    <p>We want to find a vector \(\theta\) such that multiplying the vector:</p>
+	    <div class="well well-sm">
+	      $$ h_{\theta}(x) = \begin{bmatrix} 1 & FatherHeight \\ \end{bmatrix} .
+	      \begin{bmatrix}
+	      \theta_{0} \\
+	      \theta_{1} \\
+	      \end{bmatrix}$$
+	    </div>
+	    <p>That is, we want a theta that allows us to make a prediction about the
+	      height of a child based on the height of the child's father. In this case
+	      we're limiting ourselves to looking at male children.
+	    </p>
+
+	    <h3>Function for generating a prediction.</h3>
+	    <p>Our hypothesis function, \(h_{\theta}(x)\) is as follows:</p>
+	    <pre class="prettyprint">
+	      <code class="lang-js">
+		/**
+                 * For each row in X, return the prediction resulting from dotting it with
+		 * theta.
+		 *
+		 * @param X      An MdArray containing the same number of columns as theta has
+		 *               rows, and containing 1 row for each example we're getting a
+		 *               prediction for.
+		 * @param theta  A theta array with the same number of rows as X has columns.
+		 *
+		 * @returns The value of X.theta.
+		 */
+		function getPrediction(X, theta) {
+		    return X.dot(theta);
+		};
+	      </code>
+	    </pre>
 	  </div>
 	</div>
       </div>

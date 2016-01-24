@@ -104,7 +104,31 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 
 	// We should now have X and Y representing the data we've been given. It
 	// remains to append a column of 1's to X.
+	X = X.addOnes();
+	//console.log("X is now:\n" + X);
+	// Create a theta array of all ones.
+	var theta = MdArray.ones({shape : [X.dims[1], 1]});
+
+	// Get predictions
+	var predictions = getPrediction(X, theta);
+
+	//console.log("predictions are:\n" + predictions);
     }
+
+    /**
+     * For each row in X, return the prediction resulting from dotting it with
+     * theta.
+     *
+     * @param X      An MdArray containing the same number of columns as theta has
+     *               rows, and containing 1 row for each example we're getting a
+     *               prediction for.
+     * @param theta  A theta array with the same number of rows as X has columns.
+     *
+     * @returns The value of X.theta.
+     */
+    function getPrediction(X, theta) {
+	return X.dot(theta);
+    };
 
     function setupArrays() {
 	// Create our X and Y data arrays for each of the data sets, and for each

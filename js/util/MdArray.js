@@ -386,7 +386,30 @@ MdArray.prototype = {
 	    this.strides.slice(0),
 	    sliceInfo
 	);
-    }
+    },
+
+    /**
+     * Add a column of ones as the first column in the MdArray.
+     *
+     * NOTE: This only works for 2 dimensional arrays.
+     *
+     * @returns A new MdArray with the 0'th column being all 1s.
+     *
+     * @method
+     */
+    addOnes: function() {
+	assert(this.dims.length == 2,
+	       "addOnes only defined for 2 dimensional arrays.");
+	var dims = this.dims;
+	var stride = this.strides[0] + 1;
+	var newData = this.data.slice(0);
+	var rows = _.range(0, dims[0]);
+
+	_.each(rows, function(val) {
+	    newData.splice(val * stride, 0, 1.0);
+	});
+	return new MdArray({data: newData, shape: [dims[0], dims[1] + 1]});
+    }    
 	
 };
 
