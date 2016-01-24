@@ -64,7 +64,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    .enter()
 		    .append("g")
 		    .attr("id", function(d) {
-			return d.dataName;
+			return d.dataNameShort.replace(/\s/g, "");
 		    });
 
 
@@ -76,7 +76,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    .enter()
 		    .append("g")
 		    .attr("id", function(d) {
-			return d.shortLabel;
+			return d.shortLabel.replace(/\s/g, "");
 		    });
 
 	    var subGroups = dataGroups.selectAll("g")
@@ -104,14 +104,10 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    _.flatten(_.pluck(dset2.dataSet, 'shortLabel'));
 
 	    function addControls(bLabel, cbLabels) {
-		/*var currentDiv = d3.select(cl.mId)
-			.append("div")
-			.attr("class", "spaced-button-group");*/
-		//var mainButton = currentDiv.append("button")
 		var mainButton = d3.select(cl.mId)
 			.append("button")
 			.attr("type", "button")
-			.attr("class", "btn btn-info chart-selector-button")
+			.attr("class", "btn btn-primary chart-selector-button active")
 			.text(bLabel)
 			.data([bLabel])
 			.on("click", menuMainHandleClicks);
@@ -131,6 +127,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    var ip = document.createElement("input");
 		    ip.setAttribute("type", "checkbox");
 		    ip.setAttribute("id", d);
+		    ip.checked = true;
 		    this.appendChild(ip);
 		    this.appendChild(text);
 		});
@@ -146,13 +143,31 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	};
 
 	function menuMainHandleClicks(datum) {
-	    console.log("Clicked Menu Button.");
-	    console.log("Event data is: " + datum);
+	    var el = $("#" + datum.replace(/\s/g, ""));
+	    if ($(this).hasClass("active")) {
+		$(this).removeClass("active");
+		$(this).removeClass("btn-primary");
+		$(this).addClass("btn-default");
+		$(el).attr("display", "none");
+	    }
+	    else {
+		$(this).addClass("active");
+		$(this).removeClass("btn-default");
+		$(this).addClass("btn-primary");
+		$(el).attr("display", "inline");		
+	    }
 	};
 
 	function menuCheckboxHandleClicks(datum) {
+	    var id = datum.replace(/\s/g, "");
 	    console.log("Clicked Menu Checkbox.");
-	    console.log("Data is: " + datum);
+	    console.log("Data is: " + id);
+	    if (this.checked) {
+		$("#" + id).attr("display", "inline");
+	    }
+	    else {
+		$("#" + id).attr("display", "none");
+	    }	    
 	};
 
 	cl.createAxes = function() {
