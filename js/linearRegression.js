@@ -107,6 +107,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	// Get predictions
 	var predictions = getPrediction(X, theta);
 
+	regLinGrad(X, Y, theta);
     }
 
     /**
@@ -123,6 +124,44 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
     function getPrediction(X, theta) {
 	return X.dot(theta);
     };
+
+    /**
+     * Linear regression cost function.
+     *
+     * @param theta    The current value for theta.
+     * @param X        The array of features for each example.
+     * @param Y        The observed values for our target variable.
+     *
+     * @returns  The cost for the given theta.
+     */
+    function costFn(theta, X, Y) {
+	// The number of examples is the number of rows in our X or Y vectors.
+	var numExamples = X.dims[0];
+
+	var hypothesis = getPrediction(X, theta);
+	var diff_vector = hypothesis.sub(Y);
+	var cost_val = (2 / numExamples) * (diff_vector.square()).sum();
+	return cost_val;
+    }
+
+    /**
+     * 
+     */
+    function regLinGrad(X, Y, theta) {
+	var m = X.dims[0];
+
+	// Create a grad MdArray as a vector of zeros of the same size as theta.
+	var grad = MdArray.zeros({shape: theta.dims});
+
+	// Get the current hypothesis
+	var currentHyp = getPrediction(X, theta);
+
+	// Get an MdArray of the differences between currentHyp and Y.
+	var diff = currentHyp.sub(Y);
+
+	//mainSum = ((h_theta - Y) * X[:, 1:]).sum(axis=0)
+	var arrayProduct = diff.mul(X);
+    }
 
     function setupArrays() {
 	// Create our X and Y data arrays for each of the data sets, and for each

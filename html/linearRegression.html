@@ -340,6 +340,55 @@
 	      \(3 \times 1\) vector, where n is the number of examples in our dataset. This means
 	      that we can dot matrix \(X\) with \(\theta\) without transposing either.
 	    </p>
+
+	    <h3>Cost Function</h3>
+	    <p>The cost function provides us with a measure of how close (or far away) our current \(\theta\)
+	      vector is to producing a hypothesis that closely fits the data. The cost function is as
+	      follows:</p>
+	    <pre class="prettyprint">
+	      <code class="lang-js">
+		/**
+		 * Linear regression cost function.
+		 *
+		 * @param theta    The current value for theta.
+		 * @param X        The array of features for each example.
+		 * @param Y        The observed values for our target variable.
+		 *
+		 * @returns  The cost for the given theta.
+		 */
+		function costFn(theta, X, Y) {
+		    // The number of examples is the number of rows in our X or Y vectors.
+		    var numExamples = X.dims[0];
+    		    var hypothesis = getPrediction(X, theta);
+		    var diff_vector = hypothesis.sub(Y);
+		    var cost_val = (2 / numExamples) * (diff_vector.square()).sum();
+		    return cost_val;
+		}		
+	      </code>
+	    </pre>
+	    <p>The cost function can help us determine whether our regression is minimizing correctly, but for
+	      the regression itself, we're more interested in an update function that uses the derivative of the
+	      cost function.
+	    </p>
+
+	    <p>Our updates to theta are supplied by the function that computes:
+
+	      <div class="well well-sm">
+		$$
+		\theta_{j} = \theta_{j} - \alpha \frac{1}{m}
+		\sum_{i=1}^{m}(h_{\theta}(x^{(i)}) - y^{(i)})x_{j}^{(i)}
+		$$
+	      </div>
+	      Firstly, the function that computes the sum term - which is the derivative of the cost function
+	      is as follows:
+	    </p>
+	    <p>
+	      <pre class="prettyprint">
+		<code class="lang-js">
+		</code>
+	      </pre>
+	    </p>
+	    
 	  </div>
 	</div>
       </div>
