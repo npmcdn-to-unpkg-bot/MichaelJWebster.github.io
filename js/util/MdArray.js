@@ -81,8 +81,8 @@ MdArray.prototype = {
      */ 
     get: function() {
 	'use strict';
-	var args = _.toArray(arguments);
-        var idx = this.findIndex(args);
+	//var args = _.toArray(arguments);
+        var idx = this.findIndex(arguments);
         return this.data[idx];
     },
 
@@ -110,6 +110,9 @@ MdArray.prototype = {
      */
     findIndex: function(idx) {
 	'use strict';
+	if (typeof idx[0] != 'number') {
+	    idx = idx[0];
+	}
 	assert(idx.length == this.strides.length,
 	       "Wrong number of arguments to index array with " + this.strides.length
 	       + " dimensions.");
@@ -130,7 +133,7 @@ MdArray.prototype = {
     toString: function() {
 	var idxInfo = _.zip(this.dims.slice(0), this.strides.slice(0));
 	function ts(dimStrides, idx, data) {
-	    s = "[";
+	    var s = "[";
 	    if (dimStrides.length == 1)
 	    {
 		s += "\t";
@@ -170,6 +173,8 @@ MdArray.prototype = {
     /**
      * Apply the function opFn to all pairs of matching elements in this and that.
      *
+     * NOTE: Probably need to deal with scalar that as well.
+     *
      * @param that   The other object that is part of this operation.
      * @param opFn   The operation to be applied to pairs of elements from this
      *               and that.
@@ -179,26 +184,78 @@ MdArray.prototype = {
      *
      * @method
      */
-    applyOp: function(that, opFn) {
-	var newData = null;
-	if (that instanceof MdArray) {
-	    var compatible = this.compatible(that);
-	    if (compatible)
-	    {
-		newData = _.map(this.data, function(val, idx) {
-		    return opFn(val, that.data[idx]);
+    applyOp: function(that, opFn, dim) {
+	if (typeof that === 'number') {
+	    // Scalar that case.
+	    var newArray = new MdArray({data : this.data.slice(0), shape : this.dims});
+	    _.each(newArray.data, function(val, idx) {
+		newArray.data[idx] = opFn(val, that);
+	    });
+	    return newArray;
+	}
+	var rowsEqual = this.dims[0] === that.dims[0];
+	var colsEqual = this.dims[1] === that.dims[1];
+	if (rowsEqual && colsEqual && typeof dim === 'undefined') {
+	    // Apply the operation accross very element of the two arrays.
+	    var zipped = _.zip(this.data, that.data);
+	    var newData = _.map(zipped, function(val) {
+		return opFn(val[0], val[1]);
+	    });
+	    return new MdArray({data: newData, shape: this.dims});
+	}       
+	else {
+	    var d = (dim || (rowsEqual && "cols") || (colsEqual && "rows"));
+	    assert(d, "Cannot apply operation across dimensions of different size.");
+	    if (d == "rows" && !colsEqual || d == "cols" && !rowsEqual) {
+		assert(false, "Cannot apply operation accross the requested dimension.");
+	    }
+	    if (d == "rows") {
+		/*
+		 * if d == "rows" and this and that have the same number of rows,
+		 * then we're applying the operator as follows:
+		 *
+		 * - apply op to row0 of this against row0 of that
+		 * - apply op to row1 of this against row1 of that
+		 * :
+		 * - apply op to last row of this against last row of that
+		 *
+		 * If this has a lesser number of rows than that, then first we
+		 * create a new array of the same size as that, which is a copy
+		 * of this, with the last row of this repeated the required number of
+		 * times. We do a similar operation if that has less rows than this.
+		 */
+		var finalThis = this;
+		var finalThat = that;
+		if (finalThis.dims[0] < finalThat.dims[0]) {
+		    // extend finalThis along rows.
+		    finalThis = finalThis.extendDims(finalThat.dims.slice(0));
+		}
+		else {
+		    // extend final That along rows.
+		    finalThat = finalThat.extendDims(finalThis.dims.slice(0));
+		}
+		var newData = _.map(finalThis.data, function(val, idx) {
+		    return opFn(val, finalThat.data[idx]);
 		});
+		return new MdArray({data: newData, shape : finalThis.dims.slice(0)});
 	    }
-	    else {
-		throw new Error("MdArray.applyOp: Incompatible sizes for arrays.");
-	    
+	    else { // By columns.
+		var finalThis = this;
+		var finalThat = that;
+		if (finalThis.dims[1] < finalThat.dims[1]) {
+		    // extend finalThis along rows.
+		    finalThis = finalThis.extendDims(finalThat.dims.slice(0));
+		}
+		else {
+		    // extend final That along rows.
+		    finalThat = finalThat.extendDims(finalThis.dims.slice(0));
+		}
+		var newData = _.map(finalThis.data, function(val, idx) {
+		    return opFn(val, finalThat.data[idx]);
+		});
+		return new MdArray({data: newData, shape : finalThis.dims.slice(0)});
 	    }
 	}
-	else { // multiply by scalar.
-	    newData = _.map(this.data, function(val) { return opFn(val, that); });
-	}
-	var newArray = new MdArray({data: newData, shape : this.dims.slice(0)});
-	return newArray;
     },
 
     /**
@@ -279,6 +336,49 @@ MdArray.prototype = {
 	    }
 	}
 	return this.applyOp(that, function(x, y) { return x/y; });
+    },
+
+    /**
+     * Convenience function for squaring the elements in an MdArray.
+     *
+     * @returns An MdArray containing the values of this squared.
+     */
+    square: function() {
+	return this.mul(this);
+    },
+
+    /**
+     * Convenience function for returning the sum over all elements in an MdArray.
+     *
+     * @args dim   Optional argument. Can be either rows, or columns to sum accross
+     *             rows or columns.
+     *
+     * @returns The sum of all elements in this MdArray.
+     */
+    sum: function(dimension) {
+	if (typeof dimension === 'undefined') {
+	    return _.filter(this.data, function(memo, val) {
+		return memo + val;
+	    }, 0);
+	}
+	var dim = this.dims[dimension];
+	var data = [];
+	var sliceInfo = _.map(_.range(this.dims.length), function(val) { return ":"; });
+	for (var i = 0; i < dim; i++) {
+	    sliceInfo[dimension] = i.toString();
+	    var newView = this.slice(sliceInfo);
+	    var newSum = 0;
+	    newView.foreach(function(x) { newSum += x;});
+	    data.push(newSum);
+	}
+	if (dimension == 1) {
+	    // Return as a row.
+	    return new MdArray({data: data, shape: [1, dim]});
+	}
+	else {
+	    // Return as a column.
+	    return new MdArray({data: data, shape: [dim, 1]});
+	}
     },
 
     /**
@@ -408,9 +508,45 @@ MdArray.prototype = {
 	    newData.splice(val * stride, 0, 1.0);
 	});
 	return new MdArray({data: newData, shape: [dims[0], dims[1] + 1]});
-    }    
-	
+    },
+    
+    extendDims: function(newDims) {
+	var newMdArray = MdArray.extendDims(this, newDims);
+	return newMdArray;
+    }
 };
+
+MdArray.extendDims = function(arrayInst, nDims) {
+    var bothDims = _.zip(arrayInst.dims.slice(0), nDims.slice(0));
+    var diffElement = _.find(bothDims, function(val) { return val[0] !== val[1]; });
+    var diffIndex = _.indexOf(bothDims, diffElement);
+    console.log("The array is being extended along dimension: " + diffIndex);
+    // Create a slice of arrayInst containing the last row/column or whatever
+    // the different dimension is of arrayInst.
+    var sliceInfo = _.map(arrayInst.dims, function(dimVal, idx) {
+	if (idx == diffIndex) {
+	    return (diffElement[0] - 1).toString();
+	}
+	else {
+	    return ":";
+	}
+    });
+
+    var orgView = arrayInst.slice(sliceInfo);
+    var lastData = [];
+    orgView.foreach(function (x) { lastData.push(x); });
+    var newArray = MdArray.zeros({shape: nDims});
+    var allCoords = enumerateDims(newArray.dims);
+    _.each(allCoords, function(idx) {
+	if (idx[diffIndex] < diffElement[0]) {
+	    newArray.set(arrayInst.get(idx), idx);
+	}
+	else {
+	    newArray.set(lastData[idx[diffIndex]], idx);
+	}
+    });
+    return newArray;
+};    
 
 /*
  * Factory functions.
@@ -531,6 +667,7 @@ function ArrayView(orgData, orgDims, orgStrides, sliceInfo) {
     this.dims = orgDims;
     this.strides = orgStrides;
     this.slices = processSlices(orgDims, sliceInfo);
+    this.indices = enumerateSlices(this.slices);    
     return this;
 }
 
@@ -571,7 +708,7 @@ _.extend (ArrayView.prototype, {
     toString: function() {
 	var idxInfo = _.zip(this.slices.slice(0), this.strides.slice(0));
 	function ts(ss, idx, data) {
-	    s = "[";
+	    var s = "[";
 	    if (ss.length == 1)
 	    {
 		s += "\t";
@@ -610,7 +747,7 @@ _.extend (ArrayView.prototype, {
     },
 
     foreach: function(f) {
-	var indices = enumerateSlices(this.slices);
+	var indices = this.indices;
 	for (var i = 0; i < indices.length; i++) {
 	    f(this.data[this.findIndex(indices[i])]);
 	}
@@ -619,11 +756,132 @@ _.extend (ArrayView.prototype, {
 	return enumerateSlices(this.slices);
     },
     setSlice : function(vals) {
-	var sliceIndices = this.enumerateIndices();
+	var sliceIndices = this.indices;
 	for (var i = 0; i < vals.length; i++) {
 	    this.set.apply(this, [vals[i]].concat(sliceIndices.shift()));
 	}
 	return;
+    },
+    
+    applyOp: function(that, opFn, dim) {
+	var rowsEqual = this.dims[0] === that.dims[0];
+	var colsEqual = this.dims[1] === that.dims[1];
+
+	if (rowsEqual && colsEqual && typeof dim === 'undefined') {
+	    // Apply the operation accross very element of the two views.
+	    var newData = _.map(this.indices, function(idx) {
+		return opFn(this.get(idx), that.get(idx));
+	    });
+	    return new MdArray({data: newData, shape: this.dims});
+	}       
+	else {
+	    var d = (dim || (rowsEqual && "rows") || (colsEqual && "cols"));
+	    assert(d, "Cannot apply operation across dimensions of different size.");
+	    var idcs = [];
+	    if (d == "rows") {
+		//var range = _.range(this.dims[0]);
+		for (var i = 0; i < this.dims[0]; i++) {
+		    var rowIndices = [];
+		    rowIndices = _.filter(this.indices, function(idxVal) {
+			return idxVal[0] === i;
+		    });
+		    idcs = idcs.concat(rowIndices);
+		}
+	    }
+	    else { // By columns.
+		//var range = _.range(this.dims[1]);
+		var colIndices = [];
+		for (var i = 0; i < this.dims[1]; i++) {
+		    colIndices = _.filter(this.indices, function(idxVal) {
+			return idxVal[1] === i;
+		    });
+		    idcs = idcs.concat(colIndices);
+		}
+	    }
+	    console.log("idcs is: " + idcs.toString());
+	    var values = [];
+	    var myThis = this;
+	    _.each(idcs, function(idx) {
+		values.push(opFn(myThis.get.apply(myThis, idx), that.get.apply(that, idx)));
+	    });
+	    if (d == "rows") {
+		return new MdArray({ data: values, shape: [this.dims[0], 1]});
+	    }
+	    else {
+		return new MdArray({ data: values, shape: [1, this.dims[0]]});
+	    }
+	}
+    },
+    
+    /**
+     * Add that to this, and return a new array containing the result.
+     *
+     * @param that   The array to be added to this one.
+     *
+     * @returns A new MdArray containing the values of that + this.
+     *
+     * @method
+     */
+    add: function(that, dim) {
+	return this.applyOp(that, function(x, y) { return x+y; }, dim);
+    },
+
+    /**
+     * Subtract that from this, and return a new MdArray containing the result.
+     *
+     * @param that   The array to be subtracted from this one.
+     *
+     * @returns A new MdArray containing the values of this - that.
+     *
+     * @method
+     */
+    sub: function(that, dim) {
+	return this.applyOp(that, function(x, y) { return x-y; }, dim);
+    },
+
+    /**
+     * Multiply this by that and return a new MdArray containing the result.
+     *
+     * @param that   The array to be multiplied with this one.
+     *
+     * @returns A new MdArray containing the values of this * that.
+     *
+     * @method
+     */    
+    mul: function(that, dim) {
+	return this.applyOp(that, function(x, y) { return x*y; }, dim);
+    },
+
+    /**
+     * Divide this by that and return a new MdArray containing the result.
+     *
+     * @param that   The array to divide this by.
+     *
+     * @returns A new MdArray containing the values of this / that.
+     *
+     * @method
+     */    
+    div: function(that, dim) {
+	if (that instanceof MdArray)
+	{
+	    // FIXME: Need to fix this to work for views.
+	    if (_.some(that.data, function(x) { return x == 0; }))
+	    {
+		throw new Error("MdArray.div: divisor contains a zero.");
+	    }
+	}
+	else {
+	    if (that == 0) {
+		throw new Error("MdArray.div: Attempt to divide by zero.");
+	    }
+	}
+	return this.applyOp(that, function(x, y) { return x/y; }, dim);
+    },
+
+    sum : function() {
+	var sum = 0;
+	this.foreach(function(x) { sum += x; });
+	return sum;
     }
 });
 
