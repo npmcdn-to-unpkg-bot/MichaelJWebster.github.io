@@ -3,6 +3,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
     var jsRepl = require('util/jsRepl');
     var mlUtil = require('util/mlUtil');
     var MdArray = require('util/MdArray');
+    var linReg = require('linReg/linReg');
     var linRegPage = {};
     linRegPage.doPage = function()
     {
@@ -13,10 +14,69 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    setupInitialTables(data);
 	    setupScatterPlots();
 	    setupArrays();
-	    setupRegression("Male", "Father");
+	    var lr = setupRegression("Male", "Father");
+	    mlUtil.createGDGraph("#gradDescentSvg", lr);
 	});
     };
     $(document).on("load", linRegPage.doPage());
+
+    function setupRegression(childSex, parent) {
+	var xData = [];
+	var yData = [];
+	
+	if (childSex === "Male") {
+	    yData = linRegPage.heightMale;
+	    xData = linRegPage.fatherDataMale.concat(linRegPage.motherDataMale);
+	}
+	else {
+	    yData = linRegPage.heightFemale;
+	    xData = linRegPage.fatherDataFemale.concat(linRegPage.motherDataFemale);
+	}
+
+	var xRows = xData.length/2;
+	var yRows = yData.length;
+	assert(xRows === yRows,
+	       "Cannot perform linear regression with different length X and Y vectors.");
+	       
+	// Create X as an MdArray containing a row for each of the female and male parent
+	// data.
+	var X = new MdArray({data: xData, shape: [2, xRows]});
+
+	// Transpose the array to change it to having a column for the male parent heights
+	// and another for the female parent heights.
+	X = X.T();
+
+	// Create Y as an xLength Md Array containing the yData.
+	var Y = new MdArray({data: yData, shape: [yRows, 1]});
+
+	// Create a new linear regression instance
+	return new linReg(X, Y, "STD", 0.1, 0);
+    }
+
+    function setupArrays() {
+	// Create our X and Y data arrays for each of the data sets, and for each
+	// of father and mother.
+	linRegPage.fatherDataMale = _.map(linRegPage.maleTrain, function(x) {
+	    return x.Father;
+	});
+	linRegPage.motherDataMale = _.map(linRegPage.maleTrain, function(x) {
+	    return x.Mother;
+	});
+	linRegPage.heightMale = _.map(linRegPage.maleTrain, function(x) {
+	    return x.Height;
+	});
+
+	linRegPage.fatherDataFemale = _.map(linRegPage.femaleTrain, function(x) {
+	    return x.Father;
+	});
+	linRegPage.motherDataFemale = _.map(linRegPage.femaleTrain, function(x) {
+	    return x.Mother;
+	});
+	linRegPage.heightFemale = _.map(linRegPage.femaleTrain, function(x) {
+	    return x.Height;
+	});
+    }
+
 
     function setupScatterPlots() {
 	var scatterMenuId = "#mfMenu";
@@ -68,124 +128,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	);
     }
 
-    function setupRegression(childSex, parent) {
-	var xData = [];
-	var yData = [];
-	
-	if (childSex === "Male") {
-	    yData = linRegPage.heightMale;
-	    xData = linRegPage.fatherDataMale.concat(linRegPage.motherDataMale);
-	}
-	else {
-	    yData = linRegPage.heightFemale;
-	    xData = linRegPage.fatherDataFemale.concat(linRegPage.motherDataFemale);
-	}
 
-	var xRows = xData.length/2;
-	var yRows = yData.length;
-	assert(xRows === yRows,
-	       "Cannot perform linear regression with different length X and Y vectors.");
-	       
-	// Create X as an MdArray containing a row for each of the female and male parent
-	// data.
-	var X = new MdArray({data: xData, shape: [2, xRows]});
-
-	// Transpose the array to change it to having a column for the male parent heights
-	// and another for the female parent heights.
-	X = X.T();
-
-	// Create Y as an xLength Md Array containing the yData.
-	var Y = new MdArray({data: yData, shape: [yRows, 1]});
-
-	// We should now have X and Y representing the data we've been given. It
-	// remains to append a column of 1's to X.
-	X = X.addOnes();
-
-	// Create a theta array of all ones.
-	var theta = MdArray.ones({shape : [X.dims[1], 1]});
-
-	// Get predictions
-	var predictions = getPrediction(X, theta);
-
-	regLinGrad(X, Y, theta);
-    }
-
-    /**
-     * For each row in X, return the prediction resulting from dotting it with
-     * theta.
-     *
-     * @param X      An MdArray containing the same number of columns as theta has
-     *               rows, and containing 1 row for each example we're getting a
-     *               prediction for.
-     * @param theta  A theta array with the same number of rows as X has columns.
-     *
-     * @returns The value of X.theta.
-     */
-    function getPrediction(X, theta) {
-	return X.dot(theta);
-    };
-
-    /**
-     * Linear regression cost function.
-     *
-     * @param theta    The current value for theta.
-     * @param X        The array of features for each example.
-     * @param Y        The observed values for our target variable.
-     *
-     * @returns  The cost for the given theta.
-     */
-    function costFn(theta, X, Y) {
-	// The number of examples is the number of rows in our X or Y vectors.
-	var numExamples = X.dims[0];
-
-	var hypothesis = getPrediction(X, theta);
-	var diff_vector = hypothesis.sub(Y);
-	var cost_val = (2 / numExamples) * (diff_vector.square()).sum();
-	return cost_val;
-    }
-
-    /**
-     * 
-     */
-    function regLinGrad(X, Y, theta) {
-	var m = X.dims[0];
-
-	// Create a grad MdArray as a vector of zeros of the same size as theta.
-	var grad = MdArray.zeros({shape: theta.dims});
-
-	// Get the current hypothesis
-	var currentHyp = getPrediction(X, theta);
-
-	// Get an MdArray of the differences between currentHyp and Y.
-	var diff = currentHyp.sub(Y);
-
-	//mainSum = ((h_theta - Y) * X[:, 1:]).sum(axis=0)
-	var arrayProduct = diff.mul(X);
-    }
-
-    function setupArrays() {
-	// Create our X and Y data arrays for each of the data sets, and for each
-	// of father and mother.
-	linRegPage.fatherDataMale = _.map(linRegPage.maleTrain, function(x) {
-	    return x.Father;
-	});
-	linRegPage.motherDataMale = _.map(linRegPage.maleTrain, function(x) {
-	    return x.Mother;
-	});
-	linRegPage.heightMale = _.map(linRegPage.maleTrain, function(x) {
-	    return x.Height;
-	});
-
-	linRegPage.fatherDataFemale = _.map(linRegPage.femaleTrain, function(x) {
-	    return x.Father;
-	});
-	linRegPage.motherDataFemale = _.map(linRegPage.femaleTrain, function(x) {
-	    return x.Mother;
-	});
-	linRegPage.heightFemale = _.map(linRegPage.femaleTrain, function(x) {
-	    return x.Height;
-	});
-    }
 
     function setupInitialTables(data) {
 	linRegPage.origData = _.map(data, function(val) {

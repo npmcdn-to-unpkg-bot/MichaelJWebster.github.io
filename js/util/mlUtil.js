@@ -28,6 +28,128 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	return divided;
     };
 
+    mu.createGDGraph = function(divId, lr) {
+	var gdg = {};
+	gdg.divId = divId;
+	gdg.lr = lr;
+
+	gdg.parent = $(gdg.divId);
+
+	// Try and find a reasonable height for the chart from the parent dimensions.
+	gdg.pWidth = gdg.parent.width();
+	// Use ratio 1:1
+	gdg.pHeight = gdg.pWidth;
+	gdg.parent.height(gdg.pHeight);
+
+	// Add the svg element.
+	gdg.svg = d3.select(gdg.divId)
+	    .append("svg");
+	gdg.svg.attr("width", gdg.pWidth)
+	    .attr("height", gdg.pHeight);
+
+	gdg.createAxes = function() {
+	    var minCost = _.reduce(gdg.costVals, function(memo, x) {
+		if (x < memo) {
+		    return x;
+		}
+		else {
+		    return memo;
+		}
+	    }, Number.MAX_SAFE_INTEGER);
+
+	    var maxCost = _.reduce(gdg.costVals, function(memo, x) {
+		if (x > memo) {
+		    return x;
+		}
+		else {
+		    return memo;
+		}
+	    }, Number.MIN_SAFE_INTEGER);
+	    gdg.xScale = d3.scale.linear()
+		.domain([0, gdg.costVals.length])
+		.range([gdg.pWidth/10, 0.9 * gdg.pWidth])
+		.nice();
+
+	    gdg.yScale = d3.scale.linear()
+		.domain([minCost, maxCost])
+		.range([0.9 * gdg.pHeight, gdg.pHeight/10])
+		.nice();
+	    
+	    gdg.xAxis = d3.svg.axis();
+	    gdg.xAxisScale = d3.scale.linear()
+		.domain([0, gdg.costVals.length])
+		.range([gdg.pWidth/10, 0.9 * gdg.pWidth])
+		.nice();
+	    gdg.xAxis.scale(gdg.xAxisScale);
+	    gdg.xAxis.orient("bottom");
+	    
+	    gdg.yAxis = d3.svg.axis();
+	    gdg.yAxisScale = d3.scale.linear()
+		.domain([minCost, maxCost])
+		.range([gdg.yScale(minCost), gdg.yScale(maxCost)])
+		.nice();
+	    gdg.yAxis.scale(gdg.yAxisScale);
+	    gdg.yAxis.orient("left");
+
+	    gdg.svg.append("g")
+		.attr("id", "gdXAxis")
+		.attr("class", "axis")
+		.attr("transform", "translate(0 " + gdg.yScale(minCost) + ")")
+		.call(gdg.xAxis);
+
+	    gdg.svg.append("text")
+	    	.attr("x", (gdg.xScale((gdg.costVals.length)/3)))
+		.attr("y", (gdg.yScale(minCost)) + 40)
+		.attr("fill", "black")
+		.text("Number of iterations");
+
+	    gdg.svg.append("g")
+		.attr("id", "gdYAxis")
+		.attr("class", "axis")
+		.attr("transform", "translate(" + gdg.xScale(0) + " 0)")
+		.call(gdg.yAxis);
+
+	    gdg.svg.append("text")
+		.attr("x", -20)
+		.attr("y", 0)
+		.attr("fill", "black")
+		.text("Cost with respect to theta.")
+		.attr("transform", function() {
+		    var xlate = " translate(" + (gdg.xScale(0) - 45) + " " +
+			    (1.2 * (gdg.pHeight / 2)) + ")";
+		    var rot = " rotate(-90)";
+		    return xlate + rot;
+		});
+	    
+	};
+
+	var lineFunction = d3.svg.line()
+		.x(function(d, idx) {
+		    console.log("d is: " + d);
+		    console.log("idx is: " + idx);
+		    return gdg.xScale(idx);
+		})
+		.y(function(d) { return gdg.yScale(d); })
+		.interpolate('basis');
+	
+	gdg.createGradDescentGraph = function(cVals) {
+	    var path = gdg.svg.append('path')
+		    .attr('d', lineFunction(cVals))
+		    .attr('stroke-weight', '2px')
+		    .attr("stroke", "blue")
+		    .attr('fill', 'none');
+
+	};
+
+	gdg.runGradDescent = function(numIterations) {
+	    var costs = gdg.lr.runRegression(numIterations, true);
+	    return costs;
+	};
+	gdg.costVals = gdg.runGradDescent(30);
+	gdg.createAxes();
+	gdg.createGradDescentGraph(gdg.costVals);
+    };
+
     mu.createScatterPlots = function(mId, gId, dset1, dset2, xlabel, ylabel) {
 	var cl = {};
 	cl.mId = mId;
@@ -281,10 +403,10 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
     function getBounds(d1, d2) {
 	var d1_data = _.flatten(_.pluck(d1.dataSet, 'd'));
 	var d2_data = _.flatten(_.pluck(d2.dataSet, 'd'));
-	var maxParent = Number.MIN_VALUE;
-	var minParent = Number.MAX_VALUE;
-	var maxHeight = Number.MIN_VALUE;
-	var minHeight = Number.MAX_VALUE;	
+	var maxParent = Number.MIN_SAFE_INTEGER;
+	var minParent = Number.MAX_SAFE_INTEGER;
+	var maxHeight = Number.MIN_SAFE_INTEGER;
+	var minHeight = Number.MAX_SAFE_INTEGER;	
 	_.each(d1_data.concat(d2_data), function(val) {
 	    var maxp = val.Father > val.Mother ? val.Father : val.Mother;
 	    var minp = val.Father < val.Mother ? val.Father : val.Mother;

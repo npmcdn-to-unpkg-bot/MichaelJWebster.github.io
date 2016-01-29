@@ -1,3 +1,7 @@
+if (typeof define !== 'function') {
+    var define = require('amdefine')(module);
+}
+
 define(function(require, exports, module) {
 /*
  * MdArray
@@ -173,8 +177,6 @@ MdArray.prototype = {
     /**
      * Apply the function opFn to all pairs of matching elements in this and that.
      *
-     * NOTE: Probably need to deal with scalar that as well.
-     *
      * @param that   The other object that is part of this operation.
      * @param opFn   The operation to be applied to pairs of elements from this
      *               and that.
@@ -339,49 +341,6 @@ MdArray.prototype = {
     },
 
     /**
-     * Convenience function for squaring the elements in an MdArray.
-     *
-     * @returns An MdArray containing the values of this squared.
-     */
-    square: function() {
-	return this.mul(this);
-    },
-
-    /**
-     * Convenience function for returning the sum over all elements in an MdArray.
-     *
-     * @args dim   Optional argument. Can be either rows, or columns to sum accross
-     *             rows or columns.
-     *
-     * @returns The sum of all elements in this MdArray.
-     */
-    sum: function(dimension) {
-	if (typeof dimension === 'undefined') {
-	    return _.filter(this.data, function(memo, val) {
-		return memo + val;
-	    }, 0);
-	}
-	var dim = this.dims[dimension];
-	var data = [];
-	var sliceInfo = _.map(_.range(this.dims.length), function(val) { return ":"; });
-	for (var i = 0; i < dim; i++) {
-	    sliceInfo[dimension] = i.toString();
-	    var newView = this.slice(sliceInfo);
-	    var newSum = 0;
-	    newView.foreach(function(x) { newSum += x;});
-	    data.push(newSum);
-	}
-	if (dimension == 1) {
-	    // Return as a row.
-	    return new MdArray({data: data, shape: [1, dim]});
-	}
-	else {
-	    // Return as a column.
-	    return new MdArray({data: data, shape: [dim, 1]});
-	}
-    },
-
-    /**
      * Return the dot product of this and that.
      *
      * Note: This method only runs for 1 or 2 dimensional MdArrays.
@@ -460,6 +419,24 @@ MdArray.prototype = {
     },
 
     /**
+     * Raise the values in this array to power exp.
+     *
+     * NOTE: This operation occurs in place.
+     *
+     * @param exp   The exponent.
+     */
+    pow: function(exp) {
+	var t = this;
+	var indices = enumerateDims(t.dims);
+	_.each(indices, function(idx) {
+	    var dIndex = t.findIndex(idx);
+	    var val = Math.pow(t.data[dIndex], exp);
+	    t.data[dIndex] = val;
+	});
+	return t;
+    },
+
+    /**
      * Create and return an ArrayView object representing a slice of this
      * array.
      *
@@ -488,6 +465,39 @@ MdArray.prototype = {
     },
 
     /**
+     * Create and return a new MdArray object containing a copy of a slice of
+     * this array.
+     *
+     * The sliceInfo parameter is an array of strings that follow the python
+     * numpy array slice syntax. So for example:
+     *
+     * - "2:5" would be taken to mean take just all the values between 2 and 5,
+     * - ":" would mean take all possible values for this dimension.
+     * - ":5" would mean take all values up to 5,
+     * and so on.
+     *
+     * @param sliceInfo   An array containing strings of sliceInfo.
+     *
+     * @return A new MdArrayObject appropriately created for the slice.
+     *
+     * @method
+     */
+    newSlice: function(sliceInfo) {
+	var view = new ArrayView
+	(
+	    this.data,
+	    this.dims.slice(0),
+	    this.strides.slice(0),
+	    sliceInfo
+	);
+	var new_data = view.flatten();
+	var newDims = _.map(view.slices, function(sl) {
+	    return sl.end - sl.start;
+	});
+	return new MdArray({data: new_data, shape: newDims});
+    },
+
+    /**
      * Add a column of ones as the first column in the MdArray.
      *
      * NOTE: This only works for 2 dimensional arrays.
@@ -502,6 +512,7 @@ MdArray.prototype = {
 	var dims = this.dims;
 	var stride = this.strides[0] + 1;
 	var newData = this.data.slice(0);
+	//var rows = _.range(0, dims.length);
 	var rows = _.range(0, dims[0]);
 
 	_.each(rows, function(val) {
@@ -509,18 +520,156 @@ MdArray.prototype = {
 	});
 	return new MdArray({data: newData, shape: [dims[0], dims[1] + 1]});
     },
-    
+
+    sum: function(dimension) {
+	if (typeof dimension === 'undefined') {
+	    return _.reduce(this.data, function(memo, val) {
+		return memo + val;
+	    }, 0);
+	}
+	var dim = this.dims[dimension];
+	var data = [];
+	var sliceInfo = _.map(_.range(this.dims.length), function(val) { return ":"; });
+	for (var i = 0; i < dim; i++) {
+	    sliceInfo[dimension] = i.toString();
+	    var newView = this.slice(sliceInfo);
+	    var newSum = 0;
+	    newView.foreach(function(x) { newSum += x;});
+	    data.push(newSum);
+	}
+	if (dimension == 1) {
+	    // Return as a row.
+	    return new MdArray({data: data, shape: [1, dim]});
+	}
+	else {
+	    // Return as a column.
+	    return new MdArray({data: data, shape: [dim, 1]});
+	}
+    },
+
+    max: function(dimension) {
+	if (typeof dimension === 'undefined') {
+	    return _.reduce(this.data, function(memo, val) {
+		if (val > memo) {
+		    return val;
+		}
+	    }, Number.MIN_SAFE_INTEGER);
+	}
+	var data = [];
+	var dim = this.dims[dimension];
+	var sliceInfo = _.map(_.range(this.dims.length), function(val) { return ":"; });
+	for (var i = 0; i < dim; i++) {
+	    var max = Number.MIN_SAFE_INTEGER;	    
+	    sliceInfo[dimension] = i.toString();
+	    var newView = this.slice(sliceInfo);
+	    var newSum = 0;
+	    newView.foreach(function(x) {
+		if (x > max)
+		{
+		    max = x;
+		}
+	    });
+	    data.push(max);
+	}
+	if (dimension == 1) {
+	    // Return as a row.
+	    return new MdArray({data: data, shape: [1, dim]});
+	}
+	else {
+	    // Return as a column.
+	    return new MdArray({data: data, shape: [dim, 1]});
+	}
+    },
+
+    min: function(dimension) {
+	if (typeof dimension === 'undefined') {
+	    return _.reduce(this.data, function(memo, val) {
+		if (val < memo) {
+		    return val;
+		}
+	    }, Number.MAX_SAFE_INTEGER);
+	}
+	var data = [];
+	var dim = this.dims[dimension];
+	var sliceInfo = _.map(_.range(this.dims.length), function(val) { return ":"; });
+	for (var i = 0; i < dim; i++) {
+	    var min = Number.MAX_SAFE_INTEGER;	    
+	    sliceInfo[dimension] = i.toString();
+	    var newView = this.slice(sliceInfo);
+	    var newSum = 0;
+	    newView.foreach(function(x) {
+		if (x < min)
+		{
+		    min = x;
+		}
+	    });
+	    data.push(min);
+	}
+	if (dimension == 1) {
+	    // Return as a row.
+	    return new MdArray({data: data, shape: [1, dim]});
+	}
+	else {
+	    // Return as a column.
+	    return new MdArray({data: data, shape: [dim, 1]});
+	}
+    },
+
+    mean: function(dimension) {
+	if (typeof dimension === 'undefined') {
+	    var sum = _.reduce(this.data, function(memo, val) {
+		return memo + val;
+	    }, 0);
+	    return sum / this.data.length;
+	}
+	var data = [];
+	var dimSize = _.reduce(this.dims, function(memo, val, idx) {
+	    if (idx != dimension) {
+		return memo * val;
+	    }
+	    else {
+		return memo;
+	    }
+	}, 1);
+	return this.sum(dimension).div(dimSize);
+    },
+
+    /**
+     * Get the standard deviation along the rows or columns of this.
+     *
+     * @param Optional parameter - 0 => along rows - so return a column
+     *
+     * @return The standard deviation across the specified dimension.
+     */
+    std: function(dim) {
+	var d = dim || 1;
+	var XSq = this.copy().pow(2);
+	var EXSq = XSq.mean(d);
+	var muSq = (this.mean(d)).pow(2);
+	return EXSq.sub(muSq).pow(0.5);
+    },
+
     extendDims: function(newDims) {
 	var newMdArray = MdArray.extendDims(this, newDims);
 	return newMdArray;
+    },
+    copy: function() {
+	'use strict';
+	var newA = Object.create(MdArray.prototype);
+	newA.data = this.data.slice(0);
+	newA.tSize = this.tSize;
+	newA.dSize = this.dSize;
+	newA.dims = this.dims.slice(0);
+	newA.strides = this.strides.slice(0);
+	return newA;
     }
+	
 };
 
 MdArray.extendDims = function(arrayInst, nDims) {
     var bothDims = _.zip(arrayInst.dims.slice(0), nDims.slice(0));
     var diffElement = _.find(bothDims, function(val) { return val[0] !== val[1]; });
     var diffIndex = _.indexOf(bothDims, diffElement);
-    console.log("The array is being extended along dimension: " + diffIndex);
     // Create a slice of arrayInst containing the last row/column or whatever
     // the different dimension is of arrayInst.
     var sliceInfo = _.map(arrayInst.dims, function(dimVal, idx) {
@@ -542,11 +691,12 @@ MdArray.extendDims = function(arrayInst, nDims) {
 	    newArray.set(arrayInst.get(idx), idx);
 	}
 	else {
-	    newArray.set(lastData[idx[diffIndex]], idx);
+	    newArray.set(lastData[idx[1 - diffIndex]], idx);
 	}
     });
     return newArray;
-};    
+};
+
 
 /*
  * Factory functions.
@@ -630,6 +780,19 @@ MdArray.arange = function(args /* [start,] end [, by] [, shape] */) {
     return new MdArray({data : rangeVal, shape : shapeVal});
 };
 
+MdArray.createFromRows = function(rows) {
+    'use strict';
+    var numRows = rows.length;
+    var numCols = rows[0].length;
+    var d = []
+    _.each(rows, function(rowVal) {
+	d.push(rowVal[0]);
+	d.push(rowVal[1]);
+    });
+    return new MdArray({data: d, shape: [numRows, numCols]});
+};
+	
+
 /**
  * Given the dimensions of an MdArray, return an array of strides for the
  * array.
@@ -667,7 +830,7 @@ function ArrayView(orgData, orgDims, orgStrides, sliceInfo) {
     this.dims = orgDims;
     this.strides = orgStrides;
     this.slices = processSlices(orgDims, sliceInfo);
-    this.indices = enumerateSlices(this.slices);    
+    this.indices = enumerateSlices(this.slices);
     return this;
 }
 
@@ -686,6 +849,9 @@ _.extend (ArrayView.prototype, {
     findIndex: function(idx) {
 	'use strict';
 	var myThis = this;
+	if (idx[0] instanceof Array) {
+	    idx = idx[0];
+	}
 	assert(idx.length == this.strides.length,
 	       "Wrong number of arguments to index array with " + this.strides.length
 	       + " dimensions.");
@@ -753,7 +919,7 @@ _.extend (ArrayView.prototype, {
 	}
     },
     enumerateIndices: function() {
-	return enumerateSlices(this.slices);
+	return this.indices;
     },
     setSlice : function(vals) {
 	var sliceIndices = this.indices;
@@ -762,7 +928,14 @@ _.extend (ArrayView.prototype, {
 	}
 	return;
     },
-    
+    assign: function(that) {
+	var sliceIndices = this.indices;
+	for (var i = 0; i < sliceIndices.length; i++) {
+	    this.set(that.get(sliceIndices[i]), sliceIndices[i]);
+	}
+	return;
+    },
+
     applyOp: function(that, opFn, dim) {
 	var rowsEqual = this.dims[0] === that.dims[0];
 	var colsEqual = this.dims[1] === that.dims[1];
@@ -876,12 +1049,6 @@ _.extend (ArrayView.prototype, {
 	    }
 	}
 	return this.applyOp(that, function(x, y) { return x/y; }, dim);
-    },
-
-    sum : function() {
-	var sum = 0;
-	this.foreach(function(x) { sum += x; });
-	return sum;
     }
 });
 
@@ -1007,6 +1174,6 @@ function assert(condition, message) {
 }
 
 
-module.exports = exports = MdArray;
+module.exports = MdArray;
 
 });

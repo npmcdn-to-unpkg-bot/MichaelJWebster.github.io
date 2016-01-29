@@ -1,4 +1,4 @@
-requirejs(['common', 'util/jsRepl', 'util/mlUtil', 'util/MdArray'], function(common) {
-    console.log("In linearRegressionPage.js");
-    requirejs(['linearRegression']);
+requirejs(['common', 'util/jsRepl', 'util/mlUtil', 'util/MdArray', 'linReg/linReg'],
+	  function() {
+	      requirejs(['linearRegression']);
 });
