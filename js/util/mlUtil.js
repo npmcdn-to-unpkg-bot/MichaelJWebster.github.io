@@ -48,7 +48,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    .attr("height", gdg.pHeight);
 
 	gdg.createAxes = function() {
-	    var minCost = _.reduce(gdg.costVals, function(memo, x) {
+	    gdg.minCost = _.reduce(gdg.costVals, function(memo, x) {
 		if (x < memo) {
 		    return x;
 		}
@@ -57,7 +57,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		}
 	    }, Number.MAX_SAFE_INTEGER);
 
-	    var maxCost = _.reduce(gdg.costVals, function(memo, x) {
+	    gdg.maxCost = _.reduce(gdg.costVals, function(memo, x) {
 		if (x > memo) {
 		    return x;
 		}
@@ -71,7 +71,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		.nice();
 
 	    gdg.yScale = d3.scale.linear()
-		.domain([minCost, maxCost])
+		.domain([gdg.minCost, gdg.maxCost])
 		.range([0.9 * gdg.pHeight, gdg.pHeight/10])
 		.nice();
 	    
@@ -85,8 +85,8 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    
 	    gdg.yAxis = d3.svg.axis();
 	    gdg.yAxisScale = d3.scale.linear()
-		.domain([minCost, maxCost])
-		.range([gdg.yScale(minCost), gdg.yScale(maxCost)])
+		.domain([gdg.minCost, gdg.maxCost])
+		.range([gdg.yScale(gdg.minCost), gdg.yScale(gdg.maxCost)])
 		.nice();
 	    gdg.yAxis.scale(gdg.yAxisScale);
 	    gdg.yAxis.orient("left");
@@ -94,12 +94,12 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    gdg.svg.append("g")
 		.attr("id", "gdXAxis")
 		.attr("class", "axis")
-		.attr("transform", "translate(0 " + gdg.yScale(minCost) + ")")
+		.attr("transform", "translate(0 " + gdg.yScale(gdg.minCost) + ")")
 		.call(gdg.xAxis);
 
 	    gdg.svg.append("text")
 	    	.attr("x", (gdg.xScale((gdg.costVals.length)/3)))
-		.attr("y", (gdg.yScale(minCost)) + 40)
+		.attr("y", (gdg.yScale(gdg.minCost)) + 40)
 		.attr("fill", "black")
 		.text("Number of iterations");
 
@@ -145,9 +145,19 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    var costs = gdg.lr.runRegression(numIterations, true);
 	    return costs;
 	};
-	gdg.costVals = gdg.runGradDescent(30);
+
+	gdg.addTitle = function() {
+	    gdg.svg.append("text")
+		.attr("x", gdg.pWidth/3)
+		.attr("y", gdg.pHeight/10)
+		.attr("fill", "black")
+		.text("Max Cost = " + gdg.maxCost.toFixed(2) + "   Min Cost = " + gdg.minCost.toFixed(2));
+	};
+	
+	gdg.costVals = gdg.runGradDescent(100);
 	gdg.createAxes();
 	gdg.createGradDescentGraph(gdg.costVals);
+	gdg.addTitle();
     };
 
     mu.createScatterPlots = function(mId, gId, dset1, dset2, xlabel, ylabel) {
