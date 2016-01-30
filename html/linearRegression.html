@@ -51,7 +51,6 @@
           <ul class="nav navbar-nav">
             <li class="active"><a href="../index.html">Home</a></li>
             <li><a href="../html/about.html">..About</a></li>
-            <li><a href="../html/contact.html">Contact</a></li>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
               <ul class="dropdown-menu">
@@ -461,7 +460,24 @@
 	      cost function against the iterations of the gradient descent algorithm. As can
 	      be seen, when the Gradient descent algorithm is working well, the cost should
 	      reduce on each interation, until it converges to some value. The max and min
-	      values calculated for 100 iterations are shown over the graph to the right.
+	      values of the cost function calculated for 100 iterations are shown above the
+	      graph to the right.
+	    </p>
+	    <p>So, after 100 iterations we have a value for \(\theta\) (around [69, 0.15, -0.18] - it
+	      varies as the data is shuffled differently whenever this page is loaded), and a cost
+	      around about 3.5.
+	      </p>
+	    <h1>Evaluating the cost for our test data set.</h1>
+	    <p>Previously we divided our data set up into training, cross validation and test
+	      subsets. The cost for the learned \(\theta\) run on our test set is:
+	    <p>
+	      <div class="well well-sm" id="testCost">
+		<p>
+		</p>
+	      </div>
+	    <p>
+	      Depending on our requirements, we may say that the value's we've learned using
+	      gradient descent generalize quite well.
 	    </p>
 	  </div>
 	  <div class="col-md-6" id="gradDescentSvg">

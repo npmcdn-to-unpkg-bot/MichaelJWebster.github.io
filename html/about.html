@@ -1,33 +1,64 @@
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Some machine learning tutorials.">
+    <meta name="author" content="Michael Webster.">
+    <link rel="icon" href="../img/black-white-metro-globe-icon.png">
     <title>About Me.</title>
-    <link rel="stylesheet"
-      type="text/css"
-      href="../bower_components/bootstrap/dist/css/bootstrap.css"
-      />
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+    <link href="../css/grendelHome.css" rel="stylesheet">
   </head>
-  <body>
-    <a href="../index.html">
-      Go to the home page
-    </a>
-    &nbsp;
-    <a href="about.html">
-      About me
-    </a>
-    &nbsp;
-    <a href="contact.html">
-      Contact me
-    </a>
-    <hr></hr>
+  <body role="document">
+        <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">About...</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="../index.html">Home</a></li>
+            <li><a href="../html/about.html">..About</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
 
-    <h1>All about me.</h1>
+    <div class="container theme-showcase" role="main">
 
-    <!--<img src="Me.jpg" width="50%"/>-->
-    <a href="../img/Me.jpg">
-      <img src="../img/Me.jpg" width="150px"/>
-    </a>
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <h1>MichaelWebster</h1>
+	<img src="../img/Me.jpg" width="150px"/>
+        <p class="lead">I'm a software developer with several years experience.</p>
+	<p>I'm recently getting interested in Web based development, machine learning and
+	  data.</p>
+	<p>This page will contain some of my experiments.</p>
+	<p>Contact me: <a href="mailto:mikewobbler@gmail.com">mikewobbler@gmail.com</a></p>
+      </div>
+    </div>
 
-    <h3>This is me looking down.</he>
-
-</body>
+  </body>
 </html>

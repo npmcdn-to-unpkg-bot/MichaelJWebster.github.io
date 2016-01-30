@@ -125,8 +125,6 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 
 	var lineFunction = d3.svg.line()
 		.x(function(d, idx) {
-		    console.log("d is: " + d);
-		    console.log("idx is: " + idx);
 		    return gdg.xScale(idx);
 		})
 		.y(function(d) { return gdg.yScale(d); })
@@ -146,18 +144,28 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    return costs;
 	};
 
-	gdg.addTitle = function() {
+	gdg.addInfo = function() {
 	    gdg.svg.append("text")
 		.attr("x", gdg.pWidth/3)
 		.attr("y", gdg.pHeight/10)
 		.attr("fill", "black")
 		.text("Max Cost = " + gdg.maxCost.toFixed(2) + "   Min Cost = " + gdg.minCost.toFixed(2));
+
+	    var t0 = gdg.lr.theta.get(0,0);
+	    var t1 = gdg.lr.theta.get(1,0);
+	    var t2 = gdg.lr.theta.get(2,0);
+	    
+	      gdg.svg.append("text")
+		.attr("x", gdg.pWidth/3)
+		.attr("y", 2 * gdg.pHeight/10)
+		.attr("fill", "black")
+		.text("Theta = [" + t0.toFixed(4) + ", " + t1.toFixed(4) + ", " + t2.toFixed(4) + "]");
 	};
 	
-	gdg.costVals = gdg.runGradDescent(100);
+	gdg.costVals = gdg.runGradDescent(1000);
 	gdg.createAxes();
 	gdg.createGradDescentGraph(gdg.costVals);
-	gdg.addTitle();
+	gdg.addInfo();
     };
 
     mu.createScatterPlots = function(mId, gId, dset1, dset2, xlabel, ylabel) {
@@ -292,8 +300,6 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 
 	function menuCheckboxHandleClicks(datum) {
 	    var id = datum.replace(/\s/g, "");
-	    console.log("Clicked Menu Checkbox.");
-	    console.log("Data is: " + id);
 	    if (this.checked) {
 		$("#" + id).attr("display", "inline");
 	    }

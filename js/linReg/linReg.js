@@ -104,7 +104,24 @@ define(function(require, exports, module) {
 	    var Xnormalised = this.normaliseVal(X).addOnes();
 	    return Xnormalised.dot(this.theta);
 	},
-	
+
+	/**
+	 * Linear regression cost function.
+	 *
+	 * @param X        The array of features for each example.
+	 * @param Y        The observed values for our target variable.
+	 * @param theta    The current value for theta.
+	 *
+	 * @returns  The cost for the given theta.
+	 */
+	costFn: function(X, Y) {
+	    // The number of examples is the number of rows in our X or Y vectors.
+	    var numExamples = X.dims[0];
+	    var hypothesis = this.predict(X);
+	    var diff_vector = hypothesis.sub(Y);
+	    var cost_val = ((diff_vector.pow(2)).sum())/ (2 * numExamples);
+	    return cost_val;
+	},
 
 	/**
 	 * Normalise the columns of data in X according to the requested normType

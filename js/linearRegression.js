@@ -14,13 +14,16 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    setupInitialTables(data);
 	    setupScatterPlots();
 	    setupArrays();
-	    var lr = setupRegression("Male", "Father");
+	    var lr = setupRegression("Male");
 	    mlUtil.createGDGraph("#gradDescentSvg", lr);
+	    var testCost = getTestCost(lr, "Male");
+	    var t = "Cost against Test Data is: " + testCost.toFixed(4);
+	    $("#testCost p").text(t);
 	});
     };
     $(document).on("load", linRegPage.doPage());
 
-    function setupRegression(childSex, parent) {
+    function setupRegression(childSex) {
 	var xData = [];
 	var yData = [];
 	
@@ -52,6 +55,55 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	// Create a new linear regression instance
 	return new linReg(X, Y, "STD", 0.1, 0);
     }
+
+    function getTestCost(lr, childSex) {
+	var xData = [];
+	var yData = [];
+	
+	if (childSex === "Male") {
+	    var fatherData = _.map(linRegPage.maleTest, function(x) {
+		return x.Father;
+	    });
+	    var motherData = _.map(linRegPage.maleTest, function(x) {
+		return x.Mother;
+	    });
+	    xData = fatherData.concat(motherData);
+	    yData = _.map(linRegPage.maleTest, function(x) {
+		return x.Height;
+	    });
+
+	}
+	else {
+	    var fatherData = _.map(linRegPage.femaleTest, function(x) {
+		return x.Father;
+	    });
+	    var motherData = _.map(linRegPage.femaleTest, function(x) {
+		return x.Mother;
+	    });
+	    xData = fatherData.concat(motherData);
+	    yData = _.map(linRegPage.femaleTest, function(x) {
+		return x.Height;
+	    });	    
+	}
+
+	var xRows = xData.length/2;
+	var yRows = yData.length;
+	assert(xRows === yRows,
+	       "Cannot perform linear regression with different length X and Y vectors.");
+	       
+	// Create X as an MdArray containing a row for each of the female and male parent
+	// data.
+	var X = new MdArray({data: xData, shape: [2, xRows]});
+
+	// Transpose the array to change it to having a column for the male parent heights
+	// and another for the female parent heights.
+	X = X.T();
+
+	// Create Y as an xLength Md Array containing the yData.
+	var Y = new MdArray({data: yData, shape: [yRows, 1]});
+
+	return lr.costFn(X, Y);
+    };
 
     function setupArrays() {
 	// Create our X and Y data arrays for each of the data sets, and for each
