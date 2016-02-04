@@ -60,8 +60,39 @@
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div>
         <h1>D3js</h1>
-        <p>This page displays some experimental uses of d3js.</p>
+        <p>This page contains some experiments with uses of d3js.</p>
       </div>
+
+      <div class="row">
+	<div class="page-header indentText">
+          <h1 class="indentText">Interactive Scatter Plot</h1>
+	  <p class="indentText">The Gini coefficient is a measure of inequality within a country. A Gini
+	    coefficient of 1.0 would occur in a society were a single individual earn's
+	    all the income. A Gini coefficient of 0 would occur in a society where every
+	    individual has an exactly equal income.</p>
+
+	  <p class="indentText">The following interactive chart plots various population measures against
+	    the GINI coefficient, using data obtained from the OECD.</p>
+
+	  <p class="indentText">Mouse over any of the data circles to see the country the data is for.</p>
+	  
+	  <div class="col-md-2" id="chartMenu">
+	    <h4>Selection and Info</h4>
+	  </div>
+	  <div class="col-md-10" id="chartSvg">
+	  </div>
+	</div>
+      </div> <!-- row -->
+
+      <div class="row">
+	<div class="page-header">
+          <h1 class="indentText">Gini Coefficient and other metrics</h1>
+	  <div class="col-md-12">
+	    <div id="dataTable" class="table-responsive table-striped">
+	    </div>
+	  </div>
+	</div>
+      </div> <!-- row -->
 
 
       <div class="row">
@@ -124,27 +155,6 @@
 	  </div>
 	</div>
       </div> <!-- row -->
-      <div class="row">
-	<div class="page-header">
-          <h1 class="indentText">Gini Coefficient and other metrics</h1>
-	  <div class="col-md-12">
-	    <div id="dataTable" class="table-responsive table-striped">
-	    </div>
-	  </div>
-	</div>
-      </div> <!-- row -->
-
-      <div class="row">
-	<div class="page-header">
-          <h1 class="indentText">Interactive Scatter Plot</h1>
-	  <div class="col-md-2 chart1" id="chartMenu">
-	    <h4>Selection and Info</h4>
-	  </div>
-	  <div class="col-md-10" id="chartSvg">
-	  </div>
-	</div>
-      </div> <!-- row -->
-
     </div> <!-- /container -->
 
 

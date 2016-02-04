@@ -2,7 +2,7 @@ define(function(require)
 {
     var d3 = require("d3");
     var _ = require("underscore");
-    var svgEl = require("util/createAxes");
+    var svgEl = require("layout/createAxes");
 
     var lPage = {};
     lPage.doPage = function() {
