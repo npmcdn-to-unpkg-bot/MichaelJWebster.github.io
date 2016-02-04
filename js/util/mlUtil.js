@@ -162,7 +162,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		.text("Theta = [" + t0.toFixed(4) + ", " + t1.toFixed(4) + ", " + t2.toFixed(4) + "]");
 	};
 	
-	gdg.costVals = gdg.runGradDescent(1000);
+	gdg.costVals = gdg.runGradDescent(50);
 	gdg.createAxes();
 	gdg.createGradDescentGraph(gdg.costVals);
 	gdg.addInfo();

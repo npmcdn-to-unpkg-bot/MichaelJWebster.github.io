@@ -76,7 +76,6 @@ define(["underscore"], function(_) {
 			}, "") + "}\n";
 		}
 	    }
-
 	    repl.writeString(s);
 	    repl.messCb && repl.messCb(e);
 	};
