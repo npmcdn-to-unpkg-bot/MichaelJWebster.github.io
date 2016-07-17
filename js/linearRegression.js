@@ -40,7 +40,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	var yRows = yData.length;
 	assert(xRows === yRows,
 	       "Cannot perform linear regression with different length X and Y vectors.");
-	       
+	
 	// Create X as an MdArray containing a row for each of the female and male parent
 	// data.
 	var X = new MdArray({data: xData, shape: [2, xRows]});
@@ -90,7 +90,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	var yRows = yData.length;
 	assert(xRows === yRows,
 	       "Cannot perform linear regression with different length X and Y vectors.");
-	       
+	
 	// Create X as an MdArray containing a row for each of the female and male parent
 	// data.
 	var X = new MdArray({data: xData, shape: [2, xRows]});
@@ -148,7 +148,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    dataNameShort : "Child Height M",
 	    dataSet : [
 		{ label: "Male Training Data", d: linRegPage.maleTrain,
-		     shortLabel: "M Training"},
+		  shortLabel: "M Training"},
 		{ label: "Male Cross Validation Data", d:linRegPage.maleCv,
 		  shortLabel: "M Cross Validation"},
 		{ label: "Male Test Data", d:linRegPage.maleTest,
@@ -306,7 +306,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
      *
      * @param event   The dom event.
      */
-	var resort = function(event, data, tableObject) {
+    var resort = function(event, data, tableObject) {
 	event.preventDefault();
 	var fieldName = event.target.textContent;
 	var sorted = _.sortBy(data, function(el) {

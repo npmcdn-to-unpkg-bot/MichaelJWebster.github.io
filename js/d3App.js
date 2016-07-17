@@ -8,7 +8,6 @@ define(function(require)
        var d3p = {};
        d3p.doPage = function()
        {
-	    
 	   console.log("In d3Page.js");
 	   var data = [4, 8, 15, 16, 23, 42];
 	   var newChart = bc.createNewBarChart();

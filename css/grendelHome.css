@@ -56,7 +56,7 @@ body {
 .dataTable td
 {
     padding: 5px 5px;
-    //border: 1px solid black;
+    /* border: 1px solid black;*/
 }
 
 .chart-selector-button
@@ -65,9 +65,23 @@ body {
     width: 120px;
 }
 
+.police-button
+{
+    border: 2px outset grey;
+    width: 90%;
+    margin-bottom: 10px;
+    color: white;
+     background: -webkit-linear-gradient(top, black, grey);
+}
+
+.police-button.active
+{
+     background: -webkit-linear-gradient(top, #2F2727, #1a82f7);
+}
+
 .spaced-vertical
 {
-    //border: 1px solid black;
+    /* border: 1px solid black;*/
 }
 
 .spaced-vertical label,
@@ -81,9 +95,4 @@ body {
     margin: 5px 0px 5px 0px;
 }
 
-//.btn-default.active,
-//.btn-default:focus
-//{
-//    background-color: #44a;
-//}
 

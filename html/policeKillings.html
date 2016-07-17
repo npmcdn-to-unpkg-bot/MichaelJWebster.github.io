@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other
+	 head content must come *after* these tags -->
+    <meta name="description" content="Some experiments with d3.">
+    <meta name="author" content="Michael Webster.">
+    <link rel="icon" href="../img/black-white-metro-globe-icon.png">
+    <title>Data Science</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="../css/grendelHome.css" rel="stylesheet">
+  </head>
+
+  <body role="document">
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Police Killings in America</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="../index.html">Home</a></li>
+            <li><a href="../html/about.html">..About</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container" role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="row">
+        <h1>Police Killings</h1>
+        <p>This page contains some visualisations of data from the
+	  <a href="http://www.theguardian.com/thecounted">Guardian counted
+	    project database</a>.</p>
+	<h1 class="indentText">Interactive Police Killings Chart</h1>
+	<p class="indentText">
+	  The <a href="http://www.theguardian.com/thecounted">Guardian counted
+	    project</a> is an attempt to accurately collect and present data on killings
+	  by police and other law enforcement agencies in the United States. Currently
+	  the data is for 2015 and 2016.
+	</p>
+      </div>
+      <div class="row well">
+	<div class="col-md-3">
+	  <h4>Select Year:</h4>
+	  <div class="btn-group-vertical col-md-12" id="selectYear">
+	    <button type="button" class="btn btn-primary active police-button"
+		    data-toggle="tooltip"
+		    title="Examine Police killings from 2015"
+		    id="y2015">2015</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Examine Police killings from 2016"
+		    id="y2016">2016</button>
+	  </div>
+	</div>
+	<div class="col-md-3">
+	  <h4>Raw or normalised:</h4>
+	  <div class="btn-group-vertical col-md-12" id="selectRaw">
+	    <button type="button" class="btn btn-primary active police-button"
+		    data-toggle="tooltip"
+		    title="View raw data for total killed by race."
+		    id="rawData">
+	      Raw
+	    </button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="View the data as a number killed per-million for each race."
+		    id="perMill">
+	      Per million
+	    </button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title='View the data scaled to show how many of each different race are
+		    killed for each "average American" killed'
+		    id="scaled">
+	      Scaled 
+	    </button>
+	  </div>
+	</div>
+	<div class="col-md-3">
+	  <h4>Armed or not:</h4>
+	  <div class="btn-group-vertical col-md-12" id="selectArmed">
+	    <button type="button" class="btn btn-primary active police-button"
+		    data-toggle="tooltip"
+		    title="Killings of armed or unarmed people."
+		    id="armedEither">Either</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of unarmed people."
+		    id="armedNo">Unarmed</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of armed people."
+		    id="armedYes">Armed</button>    
+	  </div>
+	</div>
+	<div class="col-md-3">
+	  <h4>Gender:</h4>
+	  <div class="btn-group-vertical col-md-12" id="selectGender">
+	    <button type="button" class="btn btn-primary active police-button"
+		    data-toggle="tooltip"
+		    title="Killings of Males."
+		    id="genderM">Male</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of Females."
+		    id="genderF">Female</button>
+	  </div>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-10" id="chartSvg">
+	</div>
+      </div>
+
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!--<script src="../lib/d3.js"></script>-->
+    <script data-main="../js/pKillingsPage.js" src="../bower_components/requirejs/require.js">
+    </script>
+  </body>
+</html>

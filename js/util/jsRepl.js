@@ -10,7 +10,8 @@ define(["underscore"], function(_) {
 
 	//repl.worker = new Worker("http://www.lem.com/js/util/replWorker.js");
 	//repl.worker = new Worker("http://www.mygithub.dev/js/util/replWorker.js");
-	repl.worker = new Worker("http://michaeljwebster.github.io/js/util/replWorker.js");
+	//repl.worker = new Worker("http://michaeljwebster.github.io/js/util/replWorker.js");
+	repl.worker = new Worker("http://www.beowulf.com/js/util/replWorker.js");	
 
 	function writePrompt() {
 	    if (repl.debug) {
