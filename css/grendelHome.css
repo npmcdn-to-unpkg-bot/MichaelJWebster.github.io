@@ -65,13 +65,18 @@ body {
     width: 120px;
 }
 
+.pk-div
+{
+    border: 1px ridge grey;
+}
+
 .police-button
 {
     border: 2px outset grey;
     width: 90%;
     margin-bottom: 10px;
     color: white;
-     background: -webkit-linear-gradient(top, black, grey);
+    background: -webkit-linear-gradient(top, black, grey);
 }
 
 .police-button.active

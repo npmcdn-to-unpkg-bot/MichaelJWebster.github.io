@@ -71,7 +71,7 @@
 	</p>
       </div>
       <div class="row well">
-	<div class="col-md-3">
+	<div class="col-md-3 pk-div">
 	  <h4>Select Year:</h4>
 	  <div class="btn-group-vertical col-md-12" id="selectYear">
 	    <button type="button" class="btn btn-primary active police-button"
@@ -84,7 +84,41 @@
 		    id="y2016">2016</button>
 	  </div>
 	</div>
-	<div class="col-md-3">
+	<div class="col-md-3  pk-div">
+	  <h4>Armed or not:</h4>
+	  <div class="btn-group-vertical col-md-12" id="selectArmed">
+	    <button type="button" class="btn btn-primary active police-button"
+		    data-toggle="tooltip"
+		    title="Killings of armed or unarmed people."
+		    id="armedEither">Either</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of unarmed people."
+		    id="armedNo">Unarmed</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of armed people."
+		    id="armedYes">Armed</button>    
+	  </div>
+	</div>
+	<div class="col-md-3 pk-div">
+	  <h4>Gender:</h4>
+	  <div class="btn-group-vertical col-md-12" id="selectGender">
+	    <button type="button" class="btn btn-primary active police-button"
+		    data-toggle="tooltip"
+		    title="Victims of either gender."
+		    id="genderE">Either</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of Males."
+		    id="genderM">Male</button>
+	    <button type="button" class="btn btn-primary police-button"
+		    data-toggle="tooltip"
+		    title="Killings of Females."
+		    id="genderF">Female</button>
+	  </div>
+	</div>
+		<div class="col-md-3  pk-div">
 	  <h4>Raw or normalised:</h4>
 	  <div class="btn-group-vertical col-md-12" id="selectRaw">
 	    <button type="button" class="btn btn-primary active police-button"
@@ -106,36 +140,6 @@
 		    id="scaled">
 	      Scaled 
 	    </button>
-	  </div>
-	</div>
-	<div class="col-md-3">
-	  <h4>Armed or not:</h4>
-	  <div class="btn-group-vertical col-md-12" id="selectArmed">
-	    <button type="button" class="btn btn-primary active police-button"
-		    data-toggle="tooltip"
-		    title="Killings of armed or unarmed people."
-		    id="armedEither">Either</button>
-	    <button type="button" class="btn btn-primary police-button"
-		    data-toggle="tooltip"
-		    title="Killings of unarmed people."
-		    id="armedNo">Unarmed</button>
-	    <button type="button" class="btn btn-primary police-button"
-		    data-toggle="tooltip"
-		    title="Killings of armed people."
-		    id="armedYes">Armed</button>    
-	  </div>
-	</div>
-	<div class="col-md-3">
-	  <h4>Gender:</h4>
-	  <div class="btn-group-vertical col-md-12" id="selectGender">
-	    <button type="button" class="btn btn-primary active police-button"
-		    data-toggle="tooltip"
-		    title="Killings of Males."
-		    id="genderM">Male</button>
-	    <button type="button" class="btn btn-primary police-button"
-		    data-toggle="tooltip"
-		    title="Killings of Females."
-		    id="genderF">Female</button>
 	  </div>
 	</div>
       </div>
