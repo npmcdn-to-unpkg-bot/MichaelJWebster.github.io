@@ -4,6 +4,9 @@ define(function(require)
 	   var d3 = require('d3');
 	   var _ = require('underscore');
 	   var $ = require('jquery');
+	   var pkg = require('pkGraph');
+	   // The graph variable.
+	   var ikg = null;
 	   var csv2015 = "../js/the-counted-2015.csv";
 	   var csv2016 = "../js/the-counted-2016.csv";
 	   var currentYear = 2015;
@@ -18,10 +21,12 @@ define(function(require)
 	       2015 :
 	       {
 		   csvFile: csv2015,
+		   processed: false
 	       },
 	       2016 :
 	       {
-		   csvFile : csv2016
+		   csvFile : csv2016,
+		   processed : false
 	       }
 	   };
 
@@ -37,15 +42,6 @@ define(function(require)
 	   {
 	       console.log("In pKillingsApp.js");
 	       var yrs = [2015, 2016];
-	       /*for (var y in yrs) {
-		   console.log("In processCurrentData and currentYear = " + yrs[y]);
-		   d3.csv(dataByYear[yrs[y]].csvFile, 
-			  function(data) {
-			      var year = y;
-			      console.log("Year is: " + year);
-			      return procRaceStats(data, dataByYear, yrs[year]);
-			  });
-		}*/
 	       _.each(yrs, function(y) {
 		   console.log("In processCurrentData and currentYear = " + y);
 		   d3.csv(dataByYear[y].csvFile, 
@@ -79,8 +75,13 @@ define(function(require)
 			 }
 			);
 
+	       dby[yr].processed = true;
 	       dataByYear = dby;
 
+	       if (_.every([2015, 2016], function(y) { return dataByYear[y].processed; }))
+	       {
+		   setupGraph();
+	       }
 	   };
 
 	   function getCurrentDataSet() {
@@ -198,6 +199,13 @@ define(function(require)
 
 	   function setupGraph() {
 	       // Setup the graph with width of bars, and the x-axis.
+	       ikg = pkg.createInteractiveBarChart
+	       (
+		   getCurrentDataSet(),
+		   "chartSvg",
+		   "Race of Victim",
+		   "Number killed"
+	       );	       
 	   }
 
 	   function updateGraph() {

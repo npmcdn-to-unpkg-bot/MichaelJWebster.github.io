@@ -23,6 +23,6 @@
   "dependencies": {
     "bootstrap": "~3.3.6",
     "requirejs": "~2.1.22",
-    "d3": "~3.5.12"
+    "d3": "~4.1.1"
   }
 }
