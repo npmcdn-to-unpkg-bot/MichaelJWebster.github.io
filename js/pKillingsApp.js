@@ -16,7 +16,8 @@ define(function(require)
 	   blackProp = 0.133;        // July 1st 2015
 	   nativeProp = 0.012;       // July 1st 2015
 	   asianPacProp = 0.056 + 0.002; // July 1st 2015
-	   hispanicProp =  0.176;    // July 1st 2015	   	   
+	   hispanicProp =  0.176;    // July 1st 2015
+	   arabAmerPop = 1.9;        // 1.9 million according to the census bureau
 	   var dataByYear = {
 	       2015 :
 	       {
@@ -154,6 +155,8 @@ define(function(require)
 	       dummy["Native American"] = 0;
 	       dummy["Asian/Pacific Islander"] = 0;
 	       dummy["Hispanic/Latino"] = 0;
+	       dummy["Arab-American"] = 0;
+
 	       // Create the counts for each race.
 	       var raceCounts = _.countBy
 	       (
@@ -161,6 +164,11 @@ define(function(require)
 		   function(val) { return val['raceethnicity'];}
 	       );
 
+	       raceCounts = _.pick(raceCounts, function(_, k)
+				   {
+				       return k != "Other" && k != "Unknown";
+				   });
+	       
 	       raceCounts = _.extend(dummy, raceCounts);
 
 	       // Get the raw or normalised data as requested...
@@ -171,6 +179,7 @@ define(function(require)
 		   raceCounts["Native American"] /= (nativeProp * totalPop);
 		   raceCounts["Asian/Pacific Islander"] /= (asianPacProp * totalPop);
 		   raceCounts["Hispanic/Latino"] /= (hispanicProp * totalPop);
+		   raceCounts["Arab-American"] /= arabAmerPop;
 		   break;
 	       case scaled:
 		   break;
@@ -212,6 +221,7 @@ define(function(require)
 	       var d = getCurrentDataSet();
 	       console.log("updateGraph");
 	       //
+	       ikg.updateChart(d);
 	       return true;
 	   };
 
