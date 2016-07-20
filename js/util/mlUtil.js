@@ -65,31 +65,29 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 		    return memo;
 		}
 	    }, Number.MIN_SAFE_INTEGER);
-	    gdg.xScale = d3.scale.linear()
+	    gdg.xScale = d3.scaleLinear()
 		.domain([0, gdg.costVals.length])
 		.range([gdg.pWidth/10, 0.9 * gdg.pWidth])
 		.nice();
 
-	    gdg.yScale = d3.scale.linear()
+	    gdg.yScale = d3.scaleLinear()
 		.domain([gdg.minCost, gdg.maxCost])
 		.range([0.9 * gdg.pHeight, gdg.pHeight/10])
 		.nice();
 	    
-	    gdg.xAxis = d3.svg.axis();
-	    gdg.xAxisScale = d3.scale.linear()
+	    gdg.xAxis = d3.axisBottom();
+	    gdg.xAxisScale = d3.scaleLinear()
 		.domain([0, gdg.costVals.length])
 		.range([gdg.pWidth/10, 0.9 * gdg.pWidth])
 		.nice();
 	    gdg.xAxis.scale(gdg.xAxisScale);
-	    gdg.xAxis.orient("bottom");
 	    
-	    gdg.yAxis = d3.svg.axis();
-	    gdg.yAxisScale = d3.scale.linear()
+	    gdg.yAxis = d3.axisLeft();
+	    gdg.yAxisScale = d3.scaleLinear()
 		.domain([gdg.minCost, gdg.maxCost])
 		.range([gdg.yScale(gdg.minCost), gdg.yScale(gdg.maxCost)])
 		.nice();
 	    gdg.yAxis.scale(gdg.yAxisScale);
-	    gdg.yAxis.orient("left");
 
 	    gdg.svg.append("g")
 		.attr("id", "gdXAxis")
@@ -123,12 +121,12 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    
 	};
 
-	var lineFunction = d3.svg.line()
+	var lineFunction = d3.line()
 		.x(function(d, idx) {
 		    return gdg.xScale(idx);
 		})
-		.y(function(d) { return gdg.yScale(d); })
-		.interpolate('basis');
+		.y(function(d) { return gdg.yScale(d); });
+	    //.interpolate('basis');
 	
 	gdg.createGradDescentGraph = function(cVals) {
 	    var path = gdg.svg.append('path')
@@ -309,31 +307,29 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	};
 
 	cl.createAxes = function() {
-	    cl.xScale = d3.scale.linear()
+	    cl.xScale = d3.scaleLinear()
 		.domain([bounds.minP, bounds.maxP])
 		.range([cl.pWidth/10, 0.9 * cl.pWidth])
 		.nice();
 
-	    cl.yScale = d3.scale.linear()
+	    cl.yScale = d3.scaleLinear()
 		.domain([bounds.minH, bounds.maxH])
 		.range([0.9 * cl.pHeight, cl.pHeight/10])
 		.nice();
 
-	    cl.xAxis = d3.svg.axis();
-	    cl.xAxisScale = d3.scale.linear()
+	    cl.xAxis = d3.axisBottom();
+	    cl.xAxisScale = d3.scaleLinear()
 		.domain([bounds.minP, bounds.maxP])
 		.range([cl.xScale(bounds.minP), cl.xScale(bounds.maxP)])
 		.nice();
 	    cl.xAxis.scale(cl.xAxisScale);
-	    cl.xAxis.orient("bottom");
 
-	    cl.yAxis = d3.svg.axis();
-	    cl.yAxisScale = d3.scale.linear()
+	    cl.yAxis = d3.axisLeft();
+	    cl.yAxisScale = d3.scaleLinear()
 		.domain([bounds.minH, bounds.maxH])
 		.range([cl.yScale(bounds.minH), cl.yScale(bounds.maxH)])
 		.nice();
 	    cl.yAxis.scale(cl.yAxisScale);
-	    cl.yAxis.orient("left");
 
 	    cl.svg.append("g")
 		.attr("id", "scatterXAxis")

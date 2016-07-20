@@ -203,40 +203,42 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    var bottomMost = digitPrecisionOnBoundary(0.8 * yBounds.min, 1, 10, false);
 	    var topMost = digitPrecisionOnBoundary(1.0 * yBounds.max, 2, 10, true);
 	    // Get x and y scales
-	    var xScale = d3.scale.linear()
+	    var xScale = d3.scaleLinear()
 		    .domain([leftMost, rightMost])
 		    .range([parWidth/10, 0.9 * parWidth])
 		    .nice();
-	    var yScale = d3.scale.linear()
+	    var yScale = d3.scaleLinear()
 		    .domain([bottomMost, topMost])
 		    .range([0.9 * parHeight, parHeight/10])
 		    .nice();
-	    var ySizeScale = d3.scale.linear()
+	    var ySizeScale = d3.scaleLinear()
 		    .domain([0, topMost])
 		    .range([0, parHeight]);
 
 
 	    // Add the axes:
-	    var xAxis = d3.svg.axis();
+	    //var xAxis = d3.svg.axis();
+	    var xAxis = d3.axisBottom();
 	    
 	    /*var xAxisScale = d3.scale.linear()
 		    .domain([xBounds.min, xBounds.max])
 	     .range([xScale(xBounds.min), xScale(xBounds.max)]);*/
-	    var xAxisScale = d3.scale.linear()
+	    var xAxisScale = d3.scaleLinear()
 		    .domain([leftMost, rightMost])
 		    .range([xScale(leftMost), xScale(rightMost)]);
 	    xAxis.scale(xAxisScale);
 	    // Specifiy where xAxis labels appear
-	    xAxis.orient("bottom");
+	    //xAxis.orient("bottom");
 	    
-	    var yAxis = d3.svg.axis();
-	    var yAxisScale = d3.scale.linear()
+	    //var yAxis = d3.svg.axis();
+	    var yAxis = d3.axisLeft();
+	    var yAxisScale = d3.scaleLinear()
 		    .domain([bottomMost, topMost])
 	     .range([yScale(bottomMost), yScale(topMost)]);
 	    
 	    yAxis.scale(yAxisScale);
 	    // Specify where the yAxis labels appear
-	    yAxis.orient("left");
+	    //yAxis.orient("left");
 
 	    // Append the axes
 	    svgEl.append("g")
@@ -342,20 +344,21 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    var parent = $("#" + isp.chartId);
 	    var parWidth = parent.width();
 	    var parHeight = parent.height();	    
-	    var yScale = d3.scale.linear()
+	    var yScale = d3.scaleLinear()
 		    .domain([bottomMost, topMost])
 		    .range([0.9 * parHeight, parHeight/10])
 		    .nice();
-	    var ySizeScale = d3.scale.linear()
+	    var ySizeScale = d3.scaleLinear()
 		    .domain([0, topMost])
 		    .range([0, parHeight]);
 	    var xAxis = eG.xAxis;
-	    var yAxis = d3.svg.axis();
-	    var yAxisScale = d3.scale.linear()
+	    //var yAxis = d3.svg.axis();
+	    var yAxis = d3.axisLeft();
+	    var yAxisScale = d3.scaleLinear()
 		    .domain([bottomMost, topMost])
 		    .range([yScale(bottomMost), yScale(topMost)]);
 	    yAxis.scale(yAxisScale);
-	    yAxis.orient("left");
+	    //yAxis.orient("left");
 	    $("#yAxisLabel").remove();
 
 	    eG.svgEl.append("text")

@@ -18,6 +18,7 @@ define(function(require)
 	   asianPacProp = 0.056 + 0.002; // July 1st 2015
 	   hispanicProp =  0.176;    // July 1st 2015
 	   arabAmerPop = 1.9;        // 1.9 million according to the census bureau
+	   
 	   var dataByYear = {
 	       2015 :
 	       {
@@ -86,14 +87,17 @@ define(function(require)
 	   };
 
 	   function getCurrentDataSet() {
+	       var yearString = "";
 	       var cdata = null;
 	       // Get year data.
 	       switch (graphControls.selectYear) {
 	       case "y2015":
 		   cdata = dataByYear[2015].raceSubset;
+		   yearString = "2015.";
 		   break;
 	       case "y2016":
 		   cdata = dataByYear[2016].raceSubset;
+		   yearString = "2016.";		   
 		   break;
 	       default:
 		   alert("Invalid value: " +  grahpControls.selectYear +
@@ -102,6 +106,7 @@ define(function(require)
 		   break;
 	       }
 
+	       var armedString = "";
 	       // Get data based on whether victim is armed.
 	       switch (graphControls.selectArmed) {
  	       case "armedNo":
@@ -112,6 +117,7 @@ define(function(require)
 			   return val.armed == "No";
 		       }
 		   );
+		   armedString = " of unarmed ";
 		   break;
 	       case "armedYes":
 		 cdata = _.filter
@@ -121,11 +127,14 @@ define(function(require)
 			   return val.armed != "No";
 		       }
 		   );
+		   armedString = " of armed ";
 		   break;		   
 	       case "armedEither": // cdata already contains this data.
+		   armedString = " of either armed or unarmed ";
 		   break;
 	       }
 
+	       var genderString = "";
 	       switch (graphControls.selectGender) {
 	       case "genderM": // Male
 		   cdata = _.filter
@@ -135,6 +144,7 @@ define(function(require)
 			   return val.gender == "Male";
 		       }
 		   );
+		   genderString = "males, ";
 		   break;
 	       case "genderF": // Female
 		   cdata = _.filter
@@ -143,9 +153,11 @@ define(function(require)
 		       function(val) {
 			   return val.gender == "Female";
 		       }
-		   );		   
+		   );
+		   genderString = "females, ";
 		   break;
 	       case "genderE": // Either gender.
+		   genderString = "indviduals of either gender, ";
 		   break;
 	       }
 
@@ -171,22 +183,68 @@ define(function(require)
 	       
 	       raceCounts = _.extend(dummy, raceCounts);
 
+	       var divider = 1;
+	       if ($("#selectGender > .active")[0].id != "genderE") {
+		   divider = 0.5;
+	       }
+
+	       var statString = "";
+	       var yLabel = "";
 	       // Get the raw or normalised data as requested...
 	       switch (graphControls.selectRaw) {
 	       case "perMill":
-		   raceCounts["White"] /= (whiteProp * totalPop);
-		   raceCounts["Black"] /= (blackProp * totalPop);
-		   raceCounts["Native American"] /= (nativeProp * totalPop);
-		   raceCounts["Asian/Pacific Islander"] /= (asianPacProp * totalPop);
-		   raceCounts["Hispanic/Latino"] /= (hispanicProp * totalPop);
-		   raceCounts["Arab-American"] /= arabAmerPop;
+		   raceCounts["White"] /= (divider * whiteProp * totalPop);
+		   raceCounts["Black"] /= (divider * blackProp * totalPop);
+		   raceCounts["Native American"] /= (divider * nativeProp * totalPop);
+		   raceCounts["Asian/Pacific Islander"] /= (divider * asianPacProp * totalPop);
+		   raceCounts["Hispanic/Latino"] /= (divider * hispanicProp * totalPop);
+		   raceCounts["Arab-American"] /= divider * arabAmerPop;
+		   statString = "Number killed per million of each race";
+		   yLabel = "Number killed per million";
 		   break;
-	       case scaled:
+	       case "scaled":
+		   // For the current selection - work out the number not killed
+		   // for every person killed. Say that number is N, then we're
+		   // saying that in this category, 1 out of every N Americans
+		   // is killed by Police.
+		   var sum = _.reduce
+		   (
+		       raceCounts,
+		       function(memo, mVal) {
+			   return memo + mVal;
+		       },
+		       0
+		   );
+		   console.log("Sum is: " + sum);
+		   var N = totalPop / sum;
+		   raceCounts["White"] =
+		       N / ((whiteProp * totalPop)/raceCounts["White"]);
+		   raceCounts["Black"] =
+		       N / ((blackProp * totalPop)/ raceCounts["Black"]);
+		   raceCounts["Native American"] =
+		       N / ((nativeProp * totalPop)/raceCounts["Native American"]);
+		   raceCounts["Asian/Pacific Islander"] =
+		       N / ((asianPacProp * totalPop)/raceCounts["Asian/Pacific Islander"]);
+		   raceCounts["Hispanic/Latino"] =
+		       N / ((hispanicProp * totalPop)/raceCounts["Hispanic/Latino"]);
+		   raceCounts["Arab-American"] =
+		       N / (arabAmerPop/raceCounts["Arab-American"]);
+		   statString = "Number killed by race vs non race based average";
+		   yLabel = "Number killed vs average";
 		   break;
 	       case "rawData":
+		   statString = "Total number killed by race"
+		   yLabel = "Total number killed";
 		   break;
 	       }
-	       return raceCounts;
+	       var legendString = statString + armedString + genderString
+		       + "for the year " + yearString;
+	       console.log("legendString = " + legendString);
+	       var gdata = {};
+	       gdata.legend = legendString;
+	       gdata.data = raceCounts;
+	       gdata.yLabel = yLabel;
+	       return gdata;
 	   };
 
 	   function setupButtons() {
@@ -212,8 +270,7 @@ define(function(require)
 	       (
 		   getCurrentDataSet(),
 		   "chartSvg",
-		   "Race of Victim",
-		   "Number killed"
+		   "Race of Victim"
 	       );	       
 	   }
 

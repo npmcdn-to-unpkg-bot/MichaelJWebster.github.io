@@ -9,19 +9,21 @@ define(function(require)
 
 	   pkg.createInteractiveBarChart = function
 	   (
-	       d,
+	       gdata,
 	       chart_id,
-	       xlabel,
-	       ylabel
+	       xlabel
 	   )
 	   {
+	       var d = gdata.data;
+	       var ylabel = gdata.yLabel;
+	       var gdLegend = gdata.legend;
 	       ikg = {};
 	       ikg.xData = _.keys(d);
 	       ikg.yData = _.values(d);
 	       ikg.cId = chart_id;
 	       
 	       ikg.divWidth = $("#" + ikg.cId).width();
-	       ikg.divHeight = 0.6 * ikg.divWidth;
+	       ikg.divHeight = 0.5 * ikg.divWidth;
 	       $("#" + ikg.cId).height(ikg.divHeight);
 
 	       ikg.svgEl = d3.select("#" + ikg.cId)
@@ -40,10 +42,10 @@ define(function(require)
 	       ikg.xScale.domain(ikg.xData);
 	       ikg.xScale.rangeRound([ikg.xPadding, $("#" + ikg.cId).width() - ikg.xPadding]);
 	       // Space reserved for between bars.
-	       ikg.xScale.paddingInner(0.2);
+	       ikg.xScale.paddingInner(0.1);
 	       // Space to the left of the first bar and to the right of the rightmost
 	       // bar.
-	       ikg.xScale.paddingOuter(0.3);
+	       ikg.xScale.paddingOuter(0.2);
 
 	       ikg.xAxis = d3.axisBottom(ikg.xScale);
 
@@ -52,6 +54,18 @@ define(function(require)
 		   .attr("class", "xaxis")
 		   .attr("transform", "translate(0, " + (ikg.divHeight - ikg.yPadding) + ")")
 		   .call(ikg.xAxis);
+
+	       var xmiddle =
+		       ikg.xScale.range()[0] +
+		       (ikg.xScale.range()[1] - ikg.xScale.range()[0])/2;
+	       d3.select(".xaxis")
+		   .append("text")
+		   .attr("x", xmiddle - 40)
+		   .attr("y", 0)
+		   .attr("font-size", 22)
+		   .attr("dy", "2em")
+		   .attr("fill", "black")
+		   .text(xlabel);
 
 	       var max_val = Math.max.apply(null, ikg.yData);
 	       ikg.yScale = d3.scaleLinear()
@@ -64,7 +78,49 @@ define(function(require)
 		   .attr("class", "yaxis")
 		   .attr("transform", "translate(" + ikg.xPadding + ", 0)")
 		   .call(ikg.yAxis);
-	       
+
+	       var ymiddle = ikg.yScale.range()[0] +
+		       (ikg.yScale.range()[1] - ikg.yScale.range()[0])/2;
+
+	       d3.select(".yaxis")
+	       	   .append("text")
+		   .attr("x", -20)
+		   .attr("y", 0)
+		   .attr("font-size", 22)
+		   .attr("fill", "black")
+		   .text(ylabel)
+		   .attr("id", "ylabel")
+		   .attr("transform", function() {
+		       var xlate = " translate(-40, " + (ymiddle - 150) + ")";
+		       var rot = " rotate(-90)";
+		       return xlate + rot;
+		   });
+
+	       // Add the title/legend.
+	       var wlist = gdLegend.split(" ");
+	       ikg.svgEl.append("g")
+		   .attr("id", "gLegend");
+
+	       var fs = _.first(wlist, 8);
+	       var rs = _.rest(wlist, 8);
+	       var text = d3.select("#gLegend").append("text")
+		       .attr("x", xmiddle)
+		       .attr("y", 80)
+	       	       .attr("font-size", 20)
+	       	       .attr("fill", "black")
+		       .text(fs.join(" "));
+	       var lnum = 1;
+	       while (rs.length > 0) {
+		   fs = _.first(rs, 8);
+		   rs = _.rest(rs, 8);
+		   text.append("tspan")
+		       .attr("x", xmiddle - 40)
+		       .attr("y", 80)
+		       .attr("dy", lnum + "em")
+		       .attr("fill", "black")
+		       .text(fs.join(" "));
+		   lnum += 1;
+	       }
 
 	       // Colours
 	       ikg.colours = _.first(d3.schemeCategory10, ikg.xData.length);
@@ -82,7 +138,6 @@ define(function(require)
 	       
 	       ikg.rects = ikg.gs.append("rect")
 		       .attr("x", function(v) {
-			   console.log("Placing x for x = " + v[0]);
 			   return ikg.xScale(v[0]);
 		       })
 		       .attr("y", function(v) {
@@ -90,9 +145,7 @@ define(function(require)
 		       })
 		       .attr("width", ikg.xScale.bandwidth())
 		       .attr("height", function(v) {
-			   console.log("Height = " + ikg.yScale(v[1]));
 			   return ikg.divHeight - ikg.yPadding - ikg.yScale(v[1]);
-			   //return ikg.yScale(v[1]);
 		       })
 		       .attr("style", function(v) {
 			   var s2 = ";stroke:grey;stroke-width:1;fill-opacity:0.9;"
@@ -109,7 +162,11 @@ define(function(require)
 		       return (Math.round(100 * v[1]) / 100).toString();
 		   });
 	       
-	       ikg.updateChart = function(d) {
+	       ikg.updateChart = function(gdata) {
+		   var d = gdata.data;
+		   var ylabel = gdata.yLabel;
+		   var gdLegend = gdata.legend;
+
 		   // Update the chart with the new data d.
 		   ikg.yData = _.values(d);
 
@@ -133,21 +190,14 @@ define(function(require)
 		       .selectAll("g")
 		       .data(zpd);
 
-		   ikg.rects = // d3.selectAll("rect")
-		       //ikg.rects
+		   ikg.rects =
 		       ikg.gs.select("rect")
 		       .transition()
 		       .duration(750)
 		       .attr("y", function(v) {
-			   console.log("Y value = " + v[1]);
-			   console.log("Y = " + ikg.yScale(v[1]));
 			   return ikg.yScale(v[1]);
 		       })
 		       .attr("height", function(v) {
-			   console.log("DivHeight = " + ikg.divHeight);
-			   console.log("yPadding = " + ikg.yPadding);
-			   console.log("yval = " + ikg.yScale(v[1]));
-			   console.log("Height = " + (ikg.divHeight - ikg.yPadding - ikg.yScale(v[1])));
 			   return ikg.divHeight - ikg.yPadding - ikg.yScale(v[1]);
 		       });
 		   ikg.texts = //ikg.texts.transition()
@@ -159,9 +209,41 @@ define(function(require)
 		       .attr("fill", "black")
 		       .text(function(v)
 			     {
-				 console.log("v[1] is: " + v[1]);
 				 return (Math.round(100 * v[1]) / 100).toString();
 			     });
+
+		   d3.select("#ylabel")
+		       .transition()
+		       .duration(750)
+		       .text(ylabel);
+
+		   // Update the title/legend.
+		   // Remove the existing text.
+		   $("#gLegend").empty();
+
+		   // Do the stuff.
+		   var wlist = gdLegend.split(" ");
+
+		   var fs = _.first(wlist, 8);
+		   var rs = _.rest(wlist, 8);
+		   var text = d3.select("#gLegend").append("text")
+			   .attr("x", xmiddle)
+			   .attr("y", 80)
+	       		   .attr("font-size", 20)
+	       		   .attr("fill", "black")
+			   .text(fs.join(" "));
+		   var lnum = 1;
+		   while (rs.length > 0) {
+		       fs = _.first(rs, 8);
+		       rs = _.rest(rs, 8);
+		       text.append("tspan")
+			   .attr("x", xmiddle - 40)
+			   .attr("y", 80)
+			   .attr("dy", lnum + "em")
+			   .attr("fill", "black")
+			   .text(fs.join(" "));
+		       lnum += 1;
+		   }
 		   
 	       }
 	       return ikg;

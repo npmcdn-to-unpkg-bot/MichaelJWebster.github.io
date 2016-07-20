@@ -1,7 +1,7 @@
 define(function(require) {
     'use strict';
     var bc = {};
-    //var d3 = require(d3);
+    var d3 = require('d3');
     //var barCharts = $("#bar-charts");
     //console.log("Bar charts id = :" + barCharts.attr("id"));
     console.log("D3 version is: " + d3.version);
@@ -17,7 +17,7 @@ define(function(require) {
 	{
 	    var dataMin = Math.min.apply(null, data);
 	    var dataMax = Math.max.apply(null, data);
-	    var x = d3.scale.linear()
+	    var x = d3.scaleLinear()
 		    .domain([0, dataMax])
 		    .range([dataMin, dataMax * 10]);
 	    d3.select(classSelection)
@@ -36,7 +36,7 @@ define(function(require) {
 	    var barHeight = 20;
 	    var dataMin = Math.min.apply(null, data);
 	    var dataMax = Math.max.apply(null, data);
-	    var x = d3.scale.linear()
+	    var x = d3.scaleLinear()
 		    .domain([0, dataMax])
 		    .range([dataMin, dataMax * 10]);
 	    
@@ -68,7 +68,7 @@ define(function(require) {
 	    var width = 960;
 	    var height = 500;
 
-	    var y = d3.scale.linear()
+	    var y = d3.scaleLinear()
 		    .range([height, 0]);
 	    
 	    var chart = d3.select(classSelection)
@@ -144,7 +144,7 @@ define(function(require) {
 	    var width = 960;
 	    var height = 500;
 
-	    var y = d3.scale.linear()
+	    var y = d3.scaleLinear()
 		    .range([height, 0]);
 	    
 	    var chart = d3.select(classSelection)
