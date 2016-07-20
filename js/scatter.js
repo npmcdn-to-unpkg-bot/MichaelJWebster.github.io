@@ -380,7 +380,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    eG.svgEl.selectAll('circle')
 		.transition()
 		.duration(500)
-		.ease('quad-out')
+		//.ease('quad-out')
 		.attr("cx", function(d) {
 		    return xScale(d[0]);
 		})
@@ -407,7 +407,7 @@ define(["jquery", "d3", "underscore"], function($, d3, _) {
 	    d3.select("#bestFit")
 		.transition()
 		.duration(500)
-		.ease('qaud-out')
+		//.ease('quad-out')
 	    	.attr("x1", lineX1)
 		.attr("x2", lineX2)
 		.attr("y1", lineY1)
